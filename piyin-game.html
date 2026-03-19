@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinyin Master Pro - Trinh Phục Chữ Hán</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --success: #00b894;
+            --danger: #d63031;
+            --bg: #f9f9fc;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Nunito', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: #2d3436;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 24px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        #start-screen { display: block; }
+        .level-btn {
+            display: block;
+            width: 80%;
+            margin: 15px auto;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            color: white;
+        }
+        .btn-easy { background: #00cec9; }
+        .btn-med { background: #fdcb6e; color: #2d3436; }
+        .btn-hard { background: #e17055; }
+        .level-btn:hover { transform: scale(1.05); }
+
+        #game-screen { display: none; }
+        .chibi-cat {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px auto;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background-image: url('https://api.dicebear.com/7.x/bottts/svg?seed=blackcat&backgroundColor=transparent');
+        }
+        .illustration {
+            width: 100px;
+            height: 100px;
+            margin: 10px auto;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .hanzi-display {
+            font-size: 60px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        .pinyin-display {
+            font-size: 36px;
+            color: #636e72;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        .play-audio-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+            margin-bottom: 20px;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .option-btn {
+            background: #f1f2f6;
+            border: 2px solid #dfe4ea;
+            padding: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .option-btn:disabled { cursor: not-allowed; }
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option-btn.wrong { background: var(--danger); color: white; border-color: var(--danger); }
+
+        .feedback {
+            font-size: 16px;
+            min-height: 50px;
+            color: #2d3436;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .next-btn {
+            background: #2d3436;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: none;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="start-screen">
+        <h1>🐾 Pinyin Master</h1>
+        <p>Chọn cấp độ để bắt đầu hành trình!</p>
+        <button class="level-btn btn-easy" onclick="startGame('easy')">🌱 Dễ (50 từ - Thanh mẫu)</button>
+        <button class="level-btn btn-med" onclick="startGame('med')">🔥 Trung Bình (50 từ - Vận mẫu & Thanh điệu)</button>
+        <button class="level-btn btn-hard" onclick="startGame('hard')">☠️ Khó (50 từ - Hòa trộn khắc nghiệt)</button>
+    </div>
+
+    <div id="game-screen">
+        <div class="chibi-cat" id="cat-mascot"></div>
+        <img id="word-img" class="illustration" src="" alt="Minh họa">
+
+        <div class="hanzi-display" id="hanzi-text">貓</div>
+        <div class="pinyin-display" id="pinyin-text">_āo</div>
+
+        <button class="play-audio-btn" onclick="playCurrentWord()">🔊 Nghe Câu Hỏi</button>
+
+        <div class="options-grid" id="options-container"></div>
+
+        <div class="feedback" id="feedback-text">Nghe và chọn đáp án chính xác!</div>
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Câu Tiếp Theo ➔</button>
+    </div>
+</div>
+
+<script>
+    const database = [
+        // DỄ (50)
+        { level: "easy", hanzi: "我", pinyinFull: "wǒ", missingPart: "_ǒ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wǒ", correctIdx: 0, options: ["w", "y", "v", "m"], fullSounds: ["wǒ", "yǒ", "vǒ", "mǒ"], exp: "Tôi. Âm 'w'." },
+        { level: "easy", hanzi: "你", pinyinFull: "nǐ", missingPart: "_ǐ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nǐ", correctIdx: 1, options: ["m", "n", "l", "r"], fullSounds: ["mǐ", "nǐ", "lǐ", "rǐ"], exp: "Bạn. Âm 'n'." },
+        { level: "easy", hanzi: "他", pinyinFull: "tā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tā", correctIdx: 3, options: ["d", "p", "b", "t"], fullSounds: ["dā", "pā", "bā", "tā"], exp: "Anh ấy. Âm 't' bật hơi." },
+        { level: "easy", hanzi: "她", pinyinFull: "tā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ta2", correctIdx: 3, options: ["d", "p", "b", "t"], fullSounds: ["dā", "pā", "bā", "tā"], exp: "Cô ấy." },
+        { level: "easy", hanzi: "它", pinyinFull: "tā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ta3", correctIdx: 3, options: ["d", "p", "b", "t"], fullSounds: ["dā", "pā", "bā", "tā"], exp: "Nó (đồ vật/con vật)." },
+        { level: "easy", hanzi: "爸", pinyinFull: "bà", missingPart: "_à", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bà", correctIdx: 1, options: ["p", "b", "d", "t"], fullSounds: ["pà", "bà", "dà", "tà"], exp: "Bố. Âm 'b' không bật hơi." },
+        { level: "easy", hanzi: "媽", pinyinFull: "mā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mā", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["mā", "nā", "lā", "hā"], exp: "Mẹ. Âm mũi 'm'." },
+        { level: "easy", hanzi: "哥", pinyinFull: "gē", missingPart: "_ē", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gē", correctIdx: 2, options: ["k", "h", "g", "d"], fullSounds: ["kē", "hē", "gē", "dē"], exp: "Anh trai. Âm cuống họng 'g'." },
+        { level: "easy", hanzi: "弟", pinyinFull: "dì", missingPart: "_ì", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dì", correctIdx: 1, options: ["t", "d", "b", "p"], fullSounds: ["tì", "dì", "bì", "pì"], exp: "Em trai. Âm 'd' không bật hơi." },
+        { level: "easy", hanzi: "姐", pinyinFull: "jiě", missingPart: "_iě", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiě", correctIdx: 0, options: ["j", "q", "x", "z"], fullSounds: ["jiě", "qiě", "xiě", "ziě"], exp: "Chị gái. Âm mặt lưỡi 'j'." },
+        { level: "easy", hanzi: "妹", pinyinFull: "mèi", missingPart: "_èi", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mèi", correctIdx: 2, options: ["n", "l", "m", "f"], fullSounds: ["nèi", "lèi", "mèi", "fèi"], exp: "Em gái." },
+        { level: "easy", hanzi: "大", pinyinFull: "dà", missingPart: "_à", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dà", correctIdx: 0, options: ["d", "t", "b", "p"], fullSounds: ["dà", "tà", "bà", "pà"], exp: "To lớn." },
+        { level: "easy", hanzi: "小", pinyinFull: "xiǎo", missingPart: "_iǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiǎo", correctIdx: 2, options: ["s", "sh", "x", "q"], fullSounds: ["siǎo", "shiǎo", "xiǎo", "qiǎo"], exp: "Nhỏ bé. Âm 'x'." },
+        { level: "easy", hanzi: "多", pinyinFull: "duō", missingPart: "_uō", img: "https://api.dicebear.com/7.x/shapes/svg?seed=duō", correctIdx: 0, options: ["d", "t", "g", "k"], fullSounds: ["duō", "tuō", "guō", "kuō"], exp: "Nhiều." },
+        { level: "easy", hanzi: "少", pinyinFull: "shǎo", missingPart: "_ǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shǎo", correctIdx: 1, options: ["s", "sh", "x", "ch"], fullSounds: ["sǎo", "shǎo", "xiǎo", "chǎo"], exp: "Ít. Âm 'sh' uốn lưỡi." },
+        { level: "easy", hanzi: "好", pinyinFull: "hǎo", missingPart: "_ǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hǎo", correctIdx: 3, options: ["k", "g", "f", "h"], fullSounds: ["kǎo", "gǎo", "fǎo", "hǎo"], exp: "Tốt / Khỏe." },
+        { level: "easy", hanzi: "壞", pinyinFull: "huài", missingPart: "_uài", img: "https://api.dicebear.com/7.x/shapes/svg?seed=huài", correctIdx: 1, options: ["k", "h", "g", "f"], fullSounds: ["kuài", "huài", "guài", "fuài"], exp: "Xấu / Hỏng." },
+        { level: "easy", hanzi: "男", pinyinFull: "nán", missingPart: "_án", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nán", correctIdx: 0, options: ["n", "l", "m", "r"], fullSounds: ["nán", "lán", "mán", "rán"], exp: "Nam giới." },
+        { level: "easy", hanzi: "女", pinyinFull: "nǚ", missingPart: "_ǚ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nǚ", correctIdx: 1, options: ["l", "n", "m", "r"], fullSounds: ["lǚ", "nǚ", "mǚ", "rǚ"], exp: "Nữ giới. Phân biệt n/l." },
+        { level: "easy", hanzi: "吃", pinyinFull: "chī", missingPart: "_ī", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chī", correctIdx: 2, options: ["c", "q", "ch", "zh"], fullSounds: ["cī", "qī", "chī", "zhī"], exp: "Ăn. Âm 'ch' bật hơi uốn lưỡi." },
+        { level: "easy", hanzi: "喝", pinyinFull: "hē", missingPart: "_ē", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hē", correctIdx: 1, options: ["k", "h", "g", "f"], fullSounds: ["kē", "hē", "gē", "fē"], exp: "Uống." },
+        { level: "easy", hanzi: "買", pinyinFull: "mǎi", missingPart: "_ǎi", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mǎi", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["mǎi", "nǎi", "lǎi", "hǎi"], exp: "Mua." },
+        { level: "easy", hanzi: "賣", pinyinFull: "mài", missingPart: "_ài", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mài", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["mài", "nài", "lài", "hài"], exp: "Bán." },
+        { level: "easy", hanzi: "錢", pinyinFull: "qián", missingPart: "_ián", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qián", correctIdx: 3, options: ["x", "j", "ch", "q"], fullSounds: ["xián", "jián", "chián", "qián"], exp: "Tiền bạc. Âm 'q' bật hơi." },
+        { level: "easy", hanzi: "貴", pinyinFull: "guì", missingPart: "_uì", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guì", correctIdx: 1, options: ["k", "g", "h", "d"], fullSounds: ["kuì", "guì", "huì", "duì"], exp: "Đắt." },
+        { level: "easy", hanzi: "累", pinyinFull: "lèi", missingPart: "_èi", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lèi", correctIdx: 2, options: ["n", "r", "l", "m"], fullSounds: ["nèi", "rèi", "lèi", "mèi"], exp: "Mệt mỏi." },
+        { level: "easy", hanzi: "忙", pinyinFull: "máng", missingPart: "_áng", img: "https://api.dicebear.com/7.x/shapes/svg?seed=máng", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["máng", "náng", "láng", "háng"], exp: "Bận rộn." },
+        { level: "easy", hanzi: "去", pinyinFull: "qù", missingPart: "_ù", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qù", correctIdx: 1, options: ["j", "q", "x", "ch"], fullSounds: ["jù", "qù", "xù", "chù"], exp: "Đi." },
+        { level: "easy", hanzi: "來", pinyinFull: "lái", missingPart: "_ái", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lái", correctIdx: 3, options: ["n", "m", "r", "l"], fullSounds: ["nái", "mái", "rái", "lái"], exp: "Đến." },
+        { level: "easy", hanzi: "看", pinyinFull: "kàn", missingPart: "_àn", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kàn", correctIdx: 1, options: ["g", "k", "h", "d"], fullSounds: ["gàn", "kàn", "hàn", "dàn"], exp: "Nhìn / Xem." },
+        { level: "easy", hanzi: "聽", pinyinFull: "tīng", missingPart: "_īng", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tīng", correctIdx: 0, options: ["t", "d", "q", "j"], fullSounds: ["tīng", "dīng", "qīng", "jīng"], exp: "Nghe." },
+        { level: "easy", hanzi: "說", pinyinFull: "shuō", missingPart: "_uō", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shuō", correctIdx: 2, options: ["s", "x", "sh", "ch"], fullSounds: ["suō", "xuō", "shuō", "chuō"], exp: "Nói. Âm 'sh'." },
+        { level: "easy", hanzi: "讀", pinyinFull: "dú", missingPart: "_ú", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dú", correctIdx: 0, options: ["d", "t", "b", "p"], fullSounds: ["dú", "tú", "bú", "pú"], exp: "Đọc." },
+        { level: "easy", hanzi: "寫", pinyinFull: "xiě", missingPart: "_iě", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiě", correctIdx: 3, options: ["s", "sh", "q", "x"], fullSounds: ["siě", "shiě", "qiě", "xiě"], exp: "Viết." },
+        { level: "easy", hanzi: "學", pinyinFull: "xué", missingPart: "_ué", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xué", correctIdx: 1, options: ["sh", "x", "s", "q"], fullSounds: ["shué", "xué", "sué", "qué"], exp: "Học tập." },
+        { level: "easy", hanzi: "校", pinyinFull: "xiào", missingPart: "_iào", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiào", correctIdx: 3, options: ["s", "sh", "q", "x"], fullSounds: ["siào", "shiào", "qiào", "xiào"], exp: "Trường học." },
+        { level: "easy", hanzi: "書", pinyinFull: "shū", missingPart: "_ū", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shū", correctIdx: 0, options: ["sh", "s", "x", "ch"], fullSounds: ["shū", "sū", "xū", "chū"], exp: "Sách." },
+        { level: "easy", hanzi: "筆", pinyinFull: "bǐ", missingPart: "_ǐ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bǐ", correctIdx: 1, options: ["p", "b", "d", "t"], fullSounds: ["pǐ", "bǐ", "dǐ", "tǐ"], exp: "Bút." },
+        { level: "easy", hanzi: "水", pinyinFull: "shuǐ", missingPart: "_uǐ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shuǐ", correctIdx: 2, options: ["s", "x", "sh", "ch"], fullSounds: ["suǐ", "xuǐ", "shuǐ", "chuǐ"], exp: "Nước." },
+        { level: "easy", hanzi: "茶", pinyinFull: "chá", missingPart: "_á", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chá", correctIdx: 1, options: ["c", "ch", "zh", "sh"], fullSounds: ["cá", "chá", "zhá", "shá"], exp: "Trà." },
+        { level: "easy", hanzi: "飯", pinyinFull: "fàn", missingPart: "_àn", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fàn", correctIdx: 0, options: ["f", "h", "g", "k"], fullSounds: ["fàn", "hàn", "gàn", "kàn"], exp: "Cơm." },
+        { level: "easy", hanzi: "肉", pinyinFull: "ròu", missingPart: "_òu", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ròu", correctIdx: 3, options: ["l", "n", "m", "r"], fullSounds: ["lòu", "nòu", "mòu", "ròu"], exp: "Thịt." },
+        { level: "easy", hanzi: "魚", pinyinFull: "yú", missingPart: "_ú", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yú", correctIdx: 1, options: ["w", "y", "r", "l"], fullSounds: ["wú", "yú", "rú", "lú"], exp: "Cá. Âm 'y'." },
+        { level: "easy", hanzi: "狗", pinyinFull: "gǒu", missingPart: "_ǒu", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gǒu", correctIdx: 2, options: ["k", "h", "g", "d"], fullSounds: ["kǒu", "hǒu", "gǒu", "dǒu"], exp: "Con chó." },
+        { level: "easy", hanzi: "貓", pinyinFull: "māo", missingPart: "_āo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=māo", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["māo", "nāo", "lāo", "hāo"], exp: "Con mèo." },
+        { level: "easy", hanzi: "豬", pinyinFull: "zhū", missingPart: "_ū", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zhū", correctIdx: 1, options: ["ch", "zh", "z", "j"], fullSounds: ["chū", "zhū", "zū", "jū"], exp: "Con lợn. Âm 'zh'." },
+        { level: "easy", hanzi: "牛", pinyinFull: "niú", missingPart: "_iú", img: "https://api.dicebear.com/7.x/shapes/svg?seed=niú", correctIdx: 0, options: ["n", "l", "m", "r"], fullSounds: ["niú", "liú", "miú", "riú"], exp: "Con bò." },
+        { level: "easy", hanzi: "羊", pinyinFull: "yáng", missingPart: "_áng", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yáng", correctIdx: 2, options: ["w", "r", "y", "l"], fullSounds: ["wáng", "ráng", "yáng", "láng"], exp: "Con cừu." },
+        { level: "easy", hanzi: "鳥", pinyinFull: "niǎo", missingPart: "_iǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=niǎo", correctIdx: 0, options: ["n", "l", "m", "r"], fullSounds: ["niǎo", "liǎo", "miǎo", "riǎo"], exp: "Con chim." },
+        { level: "easy", hanzi: "馬", pinyinFull: "mǎ", missingPart: "_ǎ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mǎ", correctIdx: 3, options: ["n", "l", "f", "m"], fullSounds: ["nǎ", "lǎ", "fǎ", "mǎ"], exp: "Con ngựa." },
+
+        // TRUNG BÌNH (50)
+        { level: "med", hanzi: "愛", pinyinFull: "ài", missingPart: "_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ài", correctIdx: 1, options: ["ái", "ài", "ǎi", "āi"], fullSounds: ["ái", "ài", "ǎi", "āi"], exp: "Tình yêu. Thanh 4 dứt khoát." },
+        { level: "med", hanzi: "恨", pinyinFull: "hèn", missingPart: "h_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hèn", correctIdx: 0, options: ["èn", "én", "ěn", "ēn"], fullSounds: ["hèn", "hén", "hěn", "hēn"], exp: "Căm hận." },
+        { level: "med", hanzi: "心", pinyinFull: "xīn", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīn", correctIdx: 3, options: ["íng", "ǐn", "ìn", "īn"], fullSounds: ["xíng", "xǐn", "xìn", "xīn"], exp: "Trái tim / Tâm trí." },
+        { level: "med", hanzi: "夢", pinyinFull: "mèng", missingPart: "m_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mèng", correctIdx: 2, options: ["én", "ěn", "èng", "ēng"], fullSounds: ["mén", "měn", "mèng", "mēng"], exp: "Giấc mơ. Thanh 4." },
+        { level: "med", hanzi: "劍", pinyinFull: "jiàn", missingPart: "j_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiàn", correctIdx: 0, options: ["iàn", "ián", "iǎn", "iān"], fullSounds: ["jiàn", "jián", "jiǎn", "jiān"], exp: "Thanh kiếm." },
+        { level: "med", hanzi: "魔", pinyinFull: "mó", missingPart: "m_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mó", correctIdx: 1, options: ["ò", "ó", "ǒ", "ō"], fullSounds: ["mò", "mó", "mǒ", "mō"], exp: "Ma quỷ / Phép thuật. Thanh 2." },
+        { level: "med", hanzi: "神", pinyinFull: "shén", missingPart: "sh_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shén", correctIdx: 0, options: ["én", "èn", "ěn", "ēn"], fullSounds: ["shén", "shèn", "shěn", "shēn"], exp: "Thần linh. Thanh 2." },
+        { level: "med", hanzi: "鬼", pinyinFull: "guǐ", missingPart: "g_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guǐ", correctIdx: 2, options: ["uī", "uí", "uǐ", "uì"], fullSounds: ["guī", "guí", "guǐ", "guì"], exp: "Ma / Quỷ. Thanh 3." },
+        { level: "med", hanzi: "妖", pinyinFull: "yāo", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yāo", correctIdx: 3, options: ["ào", "áo", "ǎo", "āo"], fullSounds: ["yào", "yáo", "yǎo", "yāo"], exp: "Yêu quái. Thanh 1." },
+        { level: "med", hanzi: "怪", pinyinFull: "guài", missingPart: "g_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guài", correctIdx: 0, options: ["uài", "uái", "uǎi", "uāi"], fullSounds: ["guài", "guái", "guǎi", "guāi"], exp: "Kỳ lạ / Quái vật." },
+        { level: "med", hanzi: "仙", pinyinFull: "xiān", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiān", correctIdx: 1, options: ["iǎn", "iān", "iàn", "ián"], fullSounds: ["xiǎn", "xiān", "xiàn", "xián"], exp: "Thần tiên." },
+        { level: "med", hanzi: "龍", pinyinFull: "lóng", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lóng", correctIdx: 2, options: ["òng", "ǒng", "óng", "ōng"], fullSounds: ["lòng", "lǒng", "lóng", "lōng"], exp: "Con rồng." },
+        { level: "med", hanzi: "靈", pinyinFull: "líng", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=líng", correctIdx: 0, options: ["íng", "ǐng", "ìng", "īng"], fullSounds: ["líng", "lǐng", "lìng", "līng"], exp: "Linh hồn / Linh thiêng." },
+        { level: "med", hanzi: "魂", pinyinFull: "hún", missingPart: "h_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hún", correctIdx: 3, options: ["ùn", "ǔn", "ūn", "ún"], fullSounds: ["hùn", "hǔn", "hūn", "hún"], exp: "Linh hồn." },
+        { level: "med", hanzi: "飛", pinyinFull: "fēi", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fēi", correctIdx: 1, options: ["éi", "ēi", "ěi", "èi"], fullSounds: ["féi", "fēi", "fěi", "fèi"], exp: "Bay lượn." },
+        { level: "med", hanzi: "哭", pinyinFull: "kū", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kū", correctIdx: 2, options: ["ù", "ǔ", "ū", "ú"], fullSounds: ["kù", "kǔ", "kū", "kú"], exp: "Khóc." },
+        { level: "med", hanzi: "笑", pinyinFull: "xiào", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiào", correctIdx: 0, options: ["iào", "iāo", "iáo", "iǎo"], fullSounds: ["xiào", "xiāo", "xiáo", "xiǎo"], exp: "Cười." },
+        { level: "med", hanzi: "血", pinyinFull: "xuè", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xuè", correctIdx: 1, options: ["ué", "uè", "uě", "uē"], fullSounds: ["xué", "xuè", "xuě", "xuē"], exp: "Máu." },
+        { level: "med", hanzi: "淚", pinyinFull: "lèi", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lèi", correctIdx: 3, options: ["éi", "ěi", "ēi", "èi"], fullSounds: ["léi", "lěi", "lēi", "lèi"], exp: "Nước mắt." },
+        { level: "med", hanzi: "痛", pinyinFull: "tòng", missingPart: "t_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tòng", correctIdx: 0, options: ["òng", "óng", "ǒng", "ōng"], fullSounds: ["tòng", "tóng", "tǒng", "tōng"], exp: "Đau đớn." },
+        { level: "med", hanzi: "工", pinyinFull: "gōng", missingPart: "g_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gōng", correctIdx: 1, options: ["óng", "ōng", "ǒng", "òng"], fullSounds: ["góng", "gōng", "gǒng", "gòng"], exp: "Công việc / Làm thêm." },
+        { level: "med", hanzi: "薪", pinyinFull: "xīn", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīn", correctIdx: 2, options: ["ǐn", "ìn", "īn", "ín"], fullSounds: ["xǐn", "xìn", "xīn", "xín"], exp: "Lương bổng (薪水)." },
+        { level: "med", hanzi: "費", pinyinFull: "fèi", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fèi", correctIdx: 0, options: ["èi", "ěi", "ēi", "éi"], fullSounds: ["fèi", "fěi", "fēi", "féi"], exp: "Chi phí." },
+        { level: "med", hanzi: "班", pinyinFull: "bān", missingPart: "b_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bān", correctIdx: 3, options: ["àn", "ǎn", "án", "ān"], fullSounds: ["bàn", "bǎn", "bán", "bān"], exp: "Lớp học / Ca làm." },
+        { level: "med", hanzi: "課", pinyinFull: "kè", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kè", correctIdx: 1, options: ["é", "è", "ě", "ē"], fullSounds: ["ké", "kè", "kě", "kē"], exp: "Bài học / Tiết học." },
+        { level: "med", hanzi: "宿", pinyinFull: "sù", missingPart: "s_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=sù", correctIdx: 2, options: ["ū", "ú", "ù", "ǔ"], fullSounds: ["sū", "sú", "sù", "sǔ"], exp: "Ký túc xá." },
+        { level: "med", hanzi: "租", pinyinFull: "zū", missingPart: "z_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zū", correctIdx: 0, options: ["ū", "ú", "ù", "ǔ"], fullSounds: ["zū", "zú", "zù", "zǔ"], exp: "Thuê mướn." },
+        { level: "med", hanzi: "房", pinyinFull: "fáng", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fáng", correctIdx: 1, options: ["āng", "áng", "ǎng", "àng"], fullSounds: ["fāng", "fáng", "fǎng", "fàng"], exp: "Phòng / Căn nhà." },
+        { level: "med", hanzi: "店", pinyinFull: "diàn", missingPart: "d_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=diàn", correctIdx: 2, options: ["iān", "ián", "iàn", "iǎn"], fullSounds: ["diān", "dián", "diàn", "diǎn"], exp: "Cửa hàng." },
+        { level: "med", hanzi: "客", pinyinFull: "kè", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kè", correctIdx: 3, options: ["ē", "é", "ě", "è"], fullSounds: ["kē", "ké", "kě", "kè"], exp: "Khách hàng." },
+        { level: "med", hanzi: "冰", pinyinFull: "bīng", missingPart: "b_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bīng", correctIdx: 0, options: ["īng", "íng", "ǐng", "ìng"], fullSounds: ["bīng", "bíng", "bǐng", "bìng"], exp: "Đá / Lạnh." },
+        { level: "med", hanzi: "熱", pinyinFull: "rè", missingPart: "r_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=rè", correctIdx: 1, options: ["é", "è", "ě", "ē"], fullSounds: ["ré", "rè", "rě", "rē"], exp: "Nóng." },
+        { level: "med", hanzi: "冷", pinyinFull: "lěng", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lěng", correctIdx: 2, options: ["ēng", "éng", "ěng", "èng"], fullSounds: ["lēng", "léng", "lěng", "lèng"], exp: "Lạnh lẽo." },
+        { level: "med", hanzi: "甜", pinyinFull: "tián", missingPart: "t_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tián", correctIdx: 3, options: ["iān", "iàn", "iǎn", "ián"], fullSounds: ["tiān", "tiàn", "tiǎn", "tián"], exp: "Ngọt." },
+        { level: "med", hanzi: "苦", pinyinFull: "kǔ", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kǔ", correctIdx: 0, options: ["ǔ", "ù", "ū", "ú"], fullSounds: ["kǔ", "kù", "kū", "kú"], exp: "Đắng / Khổ." },
+        { level: "med", hanzi: "辣", pinyinFull: "là", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=là", correctIdx: 1, options: ["á", "à", "ǎ", "ā"], fullSounds: ["lá", "là", "lǎ", "lā"], exp: "Cay." },
+        { level: "med", hanzi: "咸", pinyinFull: "xián", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xián", correctIdx: 2, options: ["iān", "iàn", "ián", "iǎn"], fullSounds: ["xiān", "xiàn", "xián", "xiǎn"], exp: "Mặn." },
+        { level: "med", hanzi: "酸", pinyinFull: "suān", missingPart: "s_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=suān", correctIdx: 3, options: ["uàn", "uǎn", "uán", "uān"], fullSounds: ["suàn", "suǎn", "suán", "suān"], exp: "Chua." },
+        { level: "med", hanzi: "早", pinyinFull: "zǎo", missingPart: "z_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zǎo", correctIdx: 0, options: ["ǎo", "ào", "āo", "áo"], fullSounds: ["zǎo", "zào", "zāo", "záo"], exp: "Sớm." },
+        { level: "med", hanzi: "晚", pinyinFull: "wǎn", missingPart: "w_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wǎn", correctIdx: 1, options: ["àn", "ǎn", "ān", "án"], fullSounds: ["wàn", "wǎn", "wān", "wán"], exp: "Muộn / Buổi tối." },
+        { level: "med", hanzi: "夜", pinyinFull: "yè", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yè", correctIdx: 2, options: ["ē", "é", "è", "ě"], fullSounds: ["yē", "yé", "yè", "yě"], exp: "Ban đêm." },
+        { level: "med", hanzi: "晨", pinyinFull: "chén", missingPart: "ch_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chén", correctIdx: 3, options: ["ēn", "èn", "ěn", "én"], fullSounds: ["chēn", "chèn", "chěn", "chén"], exp: "Sáng sớm." },
+        { level: "med", hanzi: "春", pinyinFull: "chūn", missingPart: "ch_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chūn", correctIdx: 0, options: ["ūn", "ún", "ǔn", "ùn"], fullSounds: ["chūn", "chún", "chǔn", "chùn"], exp: "Mùa xuân." },
+        { level: "med", hanzi: "夏", pinyinFull: "xià", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xià", correctIdx: 1, options: ["iā", "ià", "iǎ", "iá"], fullSounds: ["xiā", "xià", "xiǎ", "xiá"], exp: "Mùa hè." },
+        { level: "med", hanzi: "秋", pinyinFull: "qiū", missingPart: "q_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qiū", correctIdx: 2, options: ["iú", "iù", "iū", "iǔ"], fullSounds: ["qiú", "qiù", "qiū", "qiǔ"], exp: "Mùa thu." },
+        { level: "med", hanzi: "冬", pinyinFull: "dōng", missingPart: "d_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dōng", correctIdx: 3, options: ["òng", "ǒng", "óng", "ōng"], fullSounds: ["dòng", "dǒng", "dóng", "dōng"], exp: "Mùa đông." },
+        { level: "med", hanzi: "風", pinyinFull: "fēng", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fēng", correctIdx: 0, options: ["ēng", "éng", "ěng", "èng"], fullSounds: ["fēng", "féng", "fěng", "fèng"], exp: "Cơn gió." },
+        { level: "med", hanzi: "雨", pinyinFull: "yǔ", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yǔ", correctIdx: 1, options: ["ú", "ǔ", "ù", "ū"], fullSounds: ["yú", "yǔ", "yù", "yū"], exp: "Cơn mưa." },
+        { level: "med", hanzi: "雪", pinyinFull: "xuě", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xuě", correctIdx: 2, options: ["ué", "uè", "uě", "uē"], fullSounds: ["xué", "xuè", "xuě", "xuē"], exp: "Tuyết." },
+        { level: "med", hanzi: "雲", pinyinFull: "yún", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yún", correctIdx: 3, options: ["ūn", "ùn", "ǔn", "ún"], fullSounds: ["yūn", "yùn", "yǔn", "yún"], exp: "Đám mây." },
+
+        // KHÓ (50)
+        { level: "hard", hanzi: "這", pinyinFull: "zhè", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zhè", correctIdx: 2, options: ["zè", "jè", "zhè", "chè"], fullSounds: ["zè", "jè", "zhè", "chè"], exp: "Cái này. Âm 'zh' uốn lưỡi." },
+        { level: "hard", hanzi: "那", pinyinFull: "nà", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nà", correctIdx: 1, options: ["là", "nà", "mà", "rà"], fullSounds: ["là", "nà", "mà", "rà"], exp: "Cái kia." },
+        { level: "hard", hanzi: "誰", pinyinFull: "shéi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shéi", correctIdx: 3, options: ["sé", "suí", "xuí", "shéi"], fullSounds: ["sé", "suí", "xuí", "shéi"], exp: "Ai?." },
+        { level: "hard", hanzi: "什", pinyinFull: "shén", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shén", correctIdx: 0, options: ["shén", "sén", "xén", "chén"], fullSounds: ["shén", "sén", "xén", "chén"], exp: "Cái gì." },
+        { level: "hard", hanzi: "麼", pinyinFull: "me", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=me", correctIdx: 1, options: ["mè", "me", "mō", "mā"], fullSounds: ["mè", "me", "mō", "mā"], exp: "Từ để hỏi (khinh thanh)." },
+        { level: "hard", hanzi: "一", pinyinFull: "yī", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yī", correctIdx: 0, options: ["yī", "yí", "yǐ", "yì"], fullSounds: ["yī", "yí", "yǐ", "yì"], exp: "Số 1." },
+        { level: "hard", hanzi: "百", pinyinFull: "bǎi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bǎi", correctIdx: 2, options: ["pǎi", "dǎi", "bǎi", "tǎi"], fullSounds: ["pǎi", "dǎi", "bǎi", "tǎi"], exp: "Một trăm." },
+        { level: "hard", hanzi: "千", pinyinFull: "qiān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qiān", correctIdx: 1, options: ["jiān", "qiān", "xiān", "ciān"], fullSounds: ["jiān", "qiān", "xiān", "ciān"], exp: "Một nghìn." },
+        { level: "hard", hanzi: "萬", pinyinFull: "wàn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wàn", correctIdx: 3, options: ["màn", "uàn", "vàn", "wàn"], fullSounds: ["màn", "uàn", "vàn", "wàn"], exp: "Một vạn." },
+        { level: "hard", hanzi: "天", pinyinFull: "tiān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tiān", correctIdx: 0, options: ["tiān", "diān", "piān", "qiān"], fullSounds: ["tiān", "diān", "piān", "qiān"], exp: "Bầu trời / Ngày." },
+        { level: "hard", hanzi: "地", pinyinFull: "dì", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dì", correctIdx: 2, options: ["tì", "bì", "dì", "pì"], fullSounds: ["tì", "bì", "dì", "pì"], exp: "Mặt đất." },
+        { level: "hard", hanzi: "星", pinyinFull: "xīng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīng", correctIdx: 1, options: ["sīng", "xīng", "shīng", "qīng"], fullSounds: ["sīng", "xīng", "shīng", "qīng"], exp: "Ngôi sao." },
+        { level: "hard", hanzi: "月", pinyinFull: "yuè", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yuè", correctIdx: 0, options: ["yuè", "ruè", "lüè", "nüè"], fullSounds: ["yuè", "ruè", "lüè", "nüè"], exp: "Mặt trăng / Tháng." },
+        { level: "hard", hanzi: "日", pinyinFull: "rì", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=rì", correctIdx: 3, options: ["lì", "zì", "zhì", "rì"], fullSounds: ["lì", "zì", "zhì", "rì"], exp: "Mặt trời / Ngày." },
+        { level: "hard", hanzi: "光", pinyinFull: "guāng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guāng", correctIdx: 0, options: ["guāng", "kuāng", "huāng", "duāng"], fullSounds: ["guāng", "kuāng", "huāng", "duāng"], exp: "Ánh sáng." },
+        { level: "hard", hanzi: "影", pinyinFull: "yǐng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yǐng", correctIdx: 1, options: ["wǐng", "yǐng", "rǐng", "lǐng"], fullSounds: ["wǐng", "yǐng", "rǐng", "lǐng"], exp: "Bóng râm." },
+        { level: "hard", hanzi: "電", pinyinFull: "diàn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=diàn", correctIdx: 2, options: ["tiàn", "biàn", "diàn", "piàn"], fullSounds: ["tiàn", "biàn", "diàn", "piàn"], exp: "Điện." },
+        { level: "hard", hanzi: "車", pinyinFull: "chē", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chē", correctIdx: 3, options: ["cē", "zhē", "qē", "chē"], fullSounds: ["cē", "zhē", "qē", "chē"], exp: "Xe cộ." },
+        { level: "hard", hanzi: "路", pinyinFull: "lù", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lù", correctIdx: 0, options: ["lù", "nù", "rù", "mù"], fullSounds: ["lù", "nù", "rù", "mù"], exp: "Con đường." },
+        { level: "hard", hanzi: "橋", pinyinFull: "qiáo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qiáo", correctIdx: 1, options: ["jiáo", "qiáo", "xiáo", "ciáo"], fullSounds: ["jiáo", "qiáo", "xiáo", "ciáo"], exp: "Cây cầu." },
+        { level: "hard", hanzi: "真", pinyinFull: "zhēn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zhēn", correctIdx: 2, options: ["zēn", "jēn", "zhēn", "chēn"], fullSounds: ["zēn", "jēn", "zhēn", "chēn"], exp: "Chân thật." },
+        { level: "hard", hanzi: "假", pinyinFull: "jiǎ", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiǎ", correctIdx: 3, options: ["qiǎ", "xiǎ", "zhiǎ", "jiǎ"], fullSounds: ["qiǎ", "xiǎ", "zhiǎ", "jiǎ"], exp: "Giả dối." },
+        { level: "hard", hanzi: "高", pinyinFull: "gāo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gāo", correctIdx: 0, options: ["gāo", "kāo", "hāo", "dāo"], fullSounds: ["gāo", "kāo", "hāo", "dāo"], exp: "Cao lớn." },
+        { level: "hard", hanzi: "低", pinyinFull: "dī", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dī", correctIdx: 1, options: ["tī", "dī", "pī", "bī"], fullSounds: ["tī", "dī", "pī", "bī"], exp: "Thấp." },
+        { level: "hard", hanzi: "新", pinyinFull: "xīn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīn", correctIdx: 2, options: ["sīn", "shīn", "xīn", "qīn"], fullSounds: ["sīn", "shīn", "xīn", "qīn"], exp: "Mới mẻ." },
+        { level: "hard", hanzi: "舊", pinyinFull: "jiù", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiù", correctIdx: 3, options: ["qiù", "xiù", "zhiù", "jiù"], fullSounds: ["qiù", "xiù", "zhiù", "jiù"], exp: "Cũ kỹ." },
+        { level: "hard", hanzi: "長", pinyinFull: "cháng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=cháng", correctIdx: 0, options: ["cháng", "cáng", "zháng", "sháng"], fullSounds: ["cháng", "cáng", "zháng", "sháng"], exp: "Dài." },
+        { level: "hard", hanzi: "短", pinyinFull: "duǎn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=duǎn", correctIdx: 1, options: ["tuǎn", "duǎn", "dǎn", "tǎn"], fullSounds: ["tuǎn", "duǎn", "dǎn", "tǎn"], exp: "Ngắn." },
+        { level: "hard", hanzi: "快", pinyinFull: "kuài", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kuài", correctIdx: 2, options: ["huài", "guài", "kuài", "fuài"], fullSounds: ["huài", "guài", "kuài", "fuài"], exp: "Nhanh." },
+        { level: "hard", hanzi: "慢", pinyinFull: "màn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=màn", correctIdx: 3, options: ["nàn", "làn", "ràn", "màn"], fullSounds: ["nàn", "làn", "ràn", "màn"], exp: "Chậm." },
+        { level: "hard", hanzi: "黑", pinyinFull: "hēi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hēi", correctIdx: 0, options: ["hēi", "kēi", "gēi", "fēi"], fullSounds: ["hēi", "kēi", "gēi", "fēi"], exp: "Màu đen." },
+        { level: "hard", hanzi: "白", pinyinFull: "bái", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bái", correctIdx: 1, options: ["pái", "bái", "dái", "tái"], fullSounds: ["pái", "bái", "dái", "tái"], exp: "Màu trắng." },
+        { level: "hard", hanzi: "紅", pinyinFull: "hóng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hóng", correctIdx: 2, options: ["góng", "kóng", "hóng", "fóng"], fullSounds: ["góng", "kóng", "hóng", "fóng"], exp: "Màu đỏ." },
+        { level: "hard", hanzi: "綠", pinyinFull: "lǜ", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lǜ", correctIdx: 3, options: ["nǜ", "rǜ", "yǜ", "lǜ"], fullSounds: ["nǜ", "rǜ", "yǜ", "lǜ"], exp: "Màu xanh lá." },
+        { level: "hard", hanzi: "黃", pinyinFull: "huáng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=huáng", correctIdx: 0, options: ["huáng", "kuáng", "guáng", "fuáng"], fullSounds: ["huáng", "kuáng", "guáng", "fuáng"], exp: "Màu vàng." },
+        { level: "hard", hanzi: "藍", pinyinFull: "lán", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lán", correctIdx: 1, options: ["nán", "lán", "rán", "mán"], fullSounds: ["nán", "lán", "rán", "mán"], exp: "Màu xanh dương." },
+        { level: "hard", hanzi: "紫", pinyinFull: "zǐ", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zǐ", correctIdx: 2, options: ["zhǐ", "cǐ", "zǐ", "sǐ"], fullSounds: ["zhǐ", "cǐ", "zǐ", "sǐ"], exp: "Màu tím." },
+        { level: "hard", hanzi: "花", pinyinFull: "huā", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=huā", correctIdx: 3, options: ["kuā", "guā", "fuā", "huā"], fullSounds: ["kuā", "guā", "fuā", "huā"], exp: "Bông hoa." },
+        { level: "hard", hanzi: "草", pinyinFull: "cǎo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=cǎo", correctIdx: 0, options: ["cǎo", "zǎo", "sǎo", "chǎo"], fullSounds: ["cǎo", "zǎo", "sǎo", "chǎo"], exp: "Cây cỏ. Âm 'c' bật hơi." },
+        { level: "hard", hanzi: "樹", pinyinFull: "shù", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shù", correctIdx: 1, options: ["sù", "shù", "xù", "chù"], fullSounds: ["sù", "shù", "xù", "chù"], exp: "Cái cây." },
+        { level: "hard", hanzi: "葉", pinyinFull: "yè", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yè", correctIdx: 2, options: ["wè", "rè", "yè", "lè"], fullSounds: ["wè", "rè", "yè", "lè"], exp: "Chiếc lá." },
+        { level: "hard", hanzi: "林", pinyinFull: "lín", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lín", correctIdx: 3, options: ["nín", "mín", "rín", "lín"], fullSounds: ["nín", "mín", "rín", "lín"], exp: "Khu rừng." },
+        { level: "hard", hanzi: "山", pinyinFull: "shān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shān", correctIdx: 0, options: ["shān", "sān", "xiān", "chān"], fullSounds: ["shān", "sān", "xiān", "chān"], exp: "Ngọn núi." },
+        { level: "hard", hanzi: "海", pinyinFull: "hǎi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hǎi", correctIdx: 1, options: ["kǎi", "hǎi", "gǎi", "fǎi"], fullSounds: ["kǎi", "hǎi", "gǎi", "fǎi"], exp: "Biển cả." },
+        { level: "hard", hanzi: "江", pinyinFull: "jiāng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiāng", correctIdx: 2, options: ["qiāng", "xiāng", "jiāng", "zhāng"], fullSounds: ["qiāng", "xiāng", "jiāng", "zhāng"], exp: "Con sông." },
+        { level: "hard", hanzi: "河", pinyinFull: "hé", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hé", correctIdx: 3, options: ["ké", "gé", "fé", "hé"], fullSounds: ["ké", "gé", "fé", "hé"], exp: "Dòng sông." },
+        { level: "hard", hanzi: "湖", pinyinFull: "hú", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hú", correctIdx: 0, options: ["hú", "kú", "gú", "fú"], fullSounds: ["hú", "kú", "gú", "fú"], exp: "Cái hồ." },
+        { level: "hard", hanzi: "島", pinyinFull: "dǎo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dǎo", correctIdx: 1, options: ["tǎo", "dǎo", "bǎo", "pǎo"], fullSounds: ["tǎo", "dǎo", "bǎo", "pǎo"], exp: "Hòn đảo." },
+        { level: "hard", hanzi: "臺", pinyinFull: "tái", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tái", correctIdx: 2, options: ["dái", "pái", "tái", "bái"], fullSounds: ["dái", "pái", "tái", "bái"], exp: "Đài (Trong Đài Loan)." },
+        { level: "hard", hanzi: "灣", pinyinFull: "wān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wān", correctIdx: 3, options: ["yān", "mān", "vān", "wān"], fullSounds: ["yān", "mān", "vān", "wān"], exp: "Loan (Trong Đài Loan)." }
+    ];
+
+    let currentQuestions = [];
+    let qIndex = 0;
+    let isProcessing = false;
+
+    const catEmotions = {
+        normal: "https://api.dicebear.com/7.x/bottts/svg?seed=blackcat&backgroundColor=transparent",
+        happy: "https://api.dicebear.com/7.x/bottts/svg?seed=happycat&backgroundColor=e2f5ec",
+        sad: "https://api.dicebear.com/7.x/bottts/svg?seed=sadcat&backgroundColor=ffeded"
+    };
+
+    function startGame(level) {
+        currentQuestions = database.filter(q => q.level === level);
+        qIndex = 0;
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isProcessing = false;
+        const q = currentQuestions[qIndex];
+
+        document.getElementById('cat-mascot').style.backgroundImage = `url('${catEmotions.normal}')`;
+        document.getElementById('word-img').src = q.img;
+        document.getElementById('hanzi-text').innerText = q.hanzi;
+        document.getElementById('pinyin-text').innerText = q.missingPart;
+        document.getElementById('feedback-text').innerText = "Nghe và chọn đáp án chính xác!";
+        document.getElementById('feedback-text').style.background = "transparent";
+        document.getElementById('next-btn').style.display = "none";
+
+        const optContainer = document.getElementById('options-container');
+        optContainer.innerHTML = '';
+
+        q.options.forEach((opt, idx) => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => handleAnswer(idx, btn);
+            optContainer.appendChild(btn);
+        });
+
+        setTimeout(playCurrentWord, 500);
+    }
+
+    function playAudio(text) {
+        return new Promise(resolve => {
+            window.speechSynthesis.cancel();
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.rate = 0.8;
+            utterance.onend = resolve;
+            utterance.onerror = resolve;
+            window.speechSynthesis.speak(utterance);
+            setTimeout(resolve, 1500);
+        });
+    }
+
+    function playCurrentWord() {
+        playAudio(currentQuestions[qIndex].pinyinFull);
+    }
+
+    async function playAllOptionsForComparison(q) {
+        const feedback = document.getElementById('feedback-text');
+        for(let i = 0; i < q.fullSounds.length; i++) {
+            feedback.innerHTML = `Đang nghe thử: <strong>${q.fullSounds[i]}</strong> (${q.options[i]})`;
+            await playAudio(q.fullSounds[i]);
+            await new Promise(r => setTimeout(r, 600));
+        }
+        feedback.innerHTML = `Giờ hãy nghe lại từ gốc <strong>${q.pinyinFull}</strong>!`;
+        await playAudio(q.pinyinFull);
+        isProcessing = false;
+    }
+
+    async function handleAnswer(selectedIndex, btnElement) {
+        if (isProcessing) return;
+
+        const q = currentQuestions[qIndex];
+        const feedback = document.getElementById('feedback-text');
+
+        if (selectedIndex === q.correctIdx) {
+            isProcessing = true;
+            btnElement.classList.add('correct');
+            document.getElementById('cat-mascot').style.backgroundImage = `url('${catEmotions.happy}')`;
+            feedback.innerHTML = `✅ <strong>Chính xác!</strong> ${q.exp}`;
+            feedback.style.background = "#e2f5ec";
+            document.getElementById('next-btn').style.display = "block";
+            playCurrentWord();
+        } else {
+            isProcessing = true;
+            btnElement.classList.add('wrong');
+            document.getElementById('cat-mascot').style.backgroundImage = `url('${catEmotions.sad}')`;
+            feedback.style.background = "#ffeded";
+            feedback.innerHTML = `❌ Sai rồi! Hệ thống sẽ đọc toàn bộ 4 phương án ghép lại để bạn phân biệt nhé...`;
+            await playAllOptionsForComparison(q);
+        }
+    }
+
+    function nextQuestion() {
+        qIndex++;
+        if (qIndex < currentQuestions.length) {
+            loadQuestion();
+        } else {
+            document.getElementById('game-screen').innerHTML = `
+                <div class="hanzi-display">🎉</div>
+                <h2>Hoàn thành xuất sắc!</h2>
+                <p>Bạn đã vượt qua 50 câu hỏi của cấp độ này.</p>
+                <button class="play-audio-btn" onclick="location.reload()">Trở về Trang Chủ</button>
+            `;
+        }
+    }
+</script>
+</body>
+</html>
