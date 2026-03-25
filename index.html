@@ -3,434 +3,492 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinyin Master Pro - Trinh Phục Chữ Hán</title>
+    <title>Góc Tiếng Trung Đáng Yêu 🌸</title>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6c5ce7;
-            --success: #00b894;
-            --danger: #d63031;
-            --bg: #f9f9fc;
-            --card-bg: #ffffff;
-        }
-        body {
-            font-family: 'Nunito', 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            color: #2d3436;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: var(--card-bg);
-            width: 90%;
-            max-width: 600px;
-            border-radius: 24px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-            padding: 30px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        #start-screen { display: block; }
-        .level-btn {
-            display: block;
-            width: 80%;
-            margin: 15px auto;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            color: white;
-        }
-        .btn-easy { background: #00cec9; }
-        .btn-med { background: #fdcb6e; color: #2d3436; }
-        .btn-hard { background: #e17055; }
-        .level-btn:hover { transform: scale(1.05); }
+        :root { --bg-color: #fff0f5; --primary: #ff8da1; --secondary: #ffb6c1; --text-main: #5a3e46; --white: #ffffff; }
+        body { background-color: var(--bg-color); background-image: radial-gradient(var(--secondary) 1.5px, transparent 1.5px); background-size: 25px 25px; font-family: 'Quicksand', sans-serif; color: var(--text-main); line-height: 1.8; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(255, 141, 161, 0.2); border: 2px solid var(--white); }
+        h1 { text-align: center; color: var(--primary); font-size: 2.2rem; margin-bottom: 25px; }
+        
+        .controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 25px; padding: 20px; background: #fff9fa; border-radius: 15px; border: 2px dashed var(--secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .audio-buttons { display: flex; gap: 15px; }
+        .btn-full-audio { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 141, 161, 0.4); transition: 0.2s; font-family: inherit; }
+        .btn-full-audio:hover { transform: translateY(-3px); background: #ff728a; box-shadow: 0 6px 20px rgba(255, 141, 161, 0.6); }
+        .btn-stop-audio { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .btn-stop-audio:hover { background: #ff91a4; transform: translateY(-2px); }
+        
+        .speed-control { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.1rem; color: var(--text-main); background: white; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--secondary); }
+        input[type=range] { accent-color: var(--primary); cursor: pointer; }
+        
+        .reading-text { font-size: 1.4rem; text-align: justify; padding: 25px; background: #fff9fa; border-radius: 15px; border-left: 6px solid var(--primary); box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); line-height: 2.3; }
+        
+        .hanzi-char { cursor: pointer; transition: all 0.2s; display: inline-block; margin: 0 1px; border-bottom: 2px dashed transparent; }
+        .hanzi-char:hover { color: var(--primary); transform: scale(1.2); font-weight: bold; border-bottom: 2px dashed var(--primary); background: #fff0f5; border-radius: 5px; }
+        
+        .highlight-word { background-color: var(--primary) !important; color: white !important; border-radius: 5px; padding: 0 4px; transform: scale(1.15); box-shadow: 0 3px 8px rgba(255, 141, 161, 0.5); border-bottom: none !important; font-weight: bold; z-index: 10; position: relative; }
+        
+        .scene-marker { color: #b78a96; font-size: 1.2rem; font-style: italic; }
+        .speaker-name { color: #d66a81; font-weight: bold; }
 
-        #game-screen { display: none; }
-        .chibi-cat {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 15px auto;
-            background-size: cover;
-            background-position: center;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            background-image: url('https://api.dicebear.com/7.x/bottts/svg?seed=blackcat&backgroundColor=transparent');
-        }
-        .illustration {
-            width: 100px;
-            height: 100px;
-            margin: 10px auto;
-            border-radius: 12px;
-            object-fit: cover;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .hanzi-display {
-            font-size: 60px;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 10px 0;
-        }
-        .pinyin-display {
-            font-size: 36px;
-            color: #636e72;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
-        .play-audio-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 18px;
-            border-radius: 20px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-            margin-bottom: 20px;
-        }
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .option-btn {
-            background: #f1f2f6;
-            border: 2px solid #dfe4ea;
-            padding: 15px;
-            font-size: 22px;
-            font-weight: bold;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .option-btn:disabled { cursor: not-allowed; }
-        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
-        .option-btn.wrong { background: var(--danger); color: white; border-color: var(--danger); }
-
-        .feedback {
-            font-size: 16px;
-            min-height: 50px;
-            color: #2d3436;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 10px;
-        }
-        .next-btn {
-            background: #2d3436;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: none;
-            margin: 0 auto;
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(90, 62, 70, 0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: var(--white); width: 90%; max-width: 550px; border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(255, 141, 161, 0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: var(--secondary); transition: 0.2s; }
+        .close-btn:hover { color: var(--primary); transform: rotate(90deg); }
+        .modal-header { display: flex; align-items: center; gap: 20px; border-bottom: 2px dashed var(--secondary); padding-bottom: 20px; margin-bottom: 20px; }
+        #character-target { width: 120px; height: 120px; background: #fff0f5; border-radius: 15px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .char-details h2 { margin: 0; color: var(--primary); font-size: 2.2rem; }
+        .char-details .pinyin { font-size: 1.3rem; color: #888; font-style: italic; margin-bottom: 10px; }
+        .btn-audio { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-family: inherit; font-weight: 600; transition: 0.2s; box-shadow: 0 4px 10px rgba(255, 141, 161, 0.4); font-size: 1rem; }
+        .btn-audio:hover { background: #ff728a; transform: translateY(-2px); }
+        .info-section { margin-bottom: 18px; font-size: 1.1rem; }
+        .info-section strong { color: var(--primary); font-size: 1.2rem;}
+        .tree-container { display: flex; align-items: center; gap: 30px; margin-top: 20px; padding: 20px; background: #fff9fa; border-radius: 15px; border: 2px dashed var(--secondary); overflow-x: auto; }
+        .tree-root { background: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; font-weight: bold; font-size: 1.5rem; box-shadow: 0 5px 15px rgba(255, 141, 161, 0.4); flex-shrink: 0; position: relative; }
+        .tree-branches { display: flex; flex-direction: column; gap: 15px; position: relative; }
+        .tree-branches::before { content: ''; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); width: 30px; height: 2px; background: var(--secondary); }
+        .tree-branch { background: white; padding: 10px 15px; border-radius: 10px; border: 1px solid var(--secondary); position: relative; box-shadow: 0 3px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; min-width: 150px; transition: 0.2s; }
+        .tree-branch:hover { transform: translateX(5px); border-color: var(--primary); }
+        .tree-branch::before { content: ''; position: absolute; left: -30px; top: 50%; width: 30px; height: 2px; background: var(--secondary); }
+        .branch-header { display: flex; justify-content: space-between; align-items: center; }
+        .branch-word { font-weight: bold; color: var(--text-main); font-size: 1.1rem; }
+        .branch-btn-audio { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0; margin-left: 10px; transition: 0.2s; }
+        .branch-btn-audio:hover { transform: scale(1.3); }
+        .branch-pinyin { font-size: 0.9rem; color: #888; font-style: italic; }
+        .branch-meaning { font-size: 0.95rem; color: var(--primary); margin-top: 3px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="start-screen">
-        <h1>🐾 Pinyin Master</h1>
-        <p>Chọn cấp độ để bắt đầu hành trình!</p>
-        <button class="level-btn btn-easy" onclick="startGame('easy')">🌱 Dễ (50 từ - Thanh mẫu)</button>
-        <button class="level-btn btn-med" onclick="startGame('med')">🔥 Trung Bình (50 từ - Vận mẫu & Thanh điệu)</button>
-        <button class="level-btn btn-hard" onclick="startGame('hard')">☠️ Khó (50 từ - Hòa trộn khắc nghiệt)</button>
+    <div class="container">
+        <h1>🌸 Bài Đọc Nhỏ Xinh 🌸</h1>
+        
+        <div class="controls-container">
+            <div class="audio-buttons">
+                <button class="btn-full-audio" onclick="playFullText()">🔊 Bắt đầu nghe Hội thoại</button>
+                <button class="btn-stop-audio" onclick="stopAudio()">⏹ Dừng</button>
+            </div>
+            <div class="speed-control">
+                <label for="speedRate">🏃‍♀️ Tốc độ:</label>
+                <input type="range" id="speedRate" min="0.5" max="1.5" step="0.1" value="0.9" oninput="updateSpeedLabel(this.value)">
+                <span id="speedLabel" style="width: 35px;">0.9x</span>
+            </div>
+        </div>
+
+        <div class="reading-text" id="text-container"></div>
     </div>
 
-    <div id="game-screen">
-        <div class="chibi-cat" id="cat-mascot"></div>
-        <img id="word-img" class="illustration" src="" alt="Minh họa">
-
-        <div class="hanzi-display" id="hanzi-text">貓</div>
-        <div class="pinyin-display" id="pinyin-text">_āo</div>
-
-        <button class="play-audio-btn" onclick="playCurrentWord()">🔊 Nghe Câu Hỏi</button>
-
-        <div class="options-grid" id="options-container"></div>
-
-        <div class="feedback" id="feedback-text">Nghe và chọn đáp án chính xác!</div>
-        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Câu Tiếp Theo ➔</button>
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeModal()">✖</span>
+            <div class="modal-header">
+                <div id="character-target" title="Bấm để xem lại nét viết"></div>
+                <div class="char-details">
+                    <h2 id="modal-char">字</h2>
+                    <div class="pinyin" id="modal-pinyin">zì</div>
+                    <button class="btn-audio" onclick="playWord(currentChar)">🔊 Nghe chữ này</button>
+                </div>
+            </div>
+            <div class="info-section"><strong>📝 Ý nghĩa:</strong> <span id="modal-meaning"></span></div>
+            <div class="info-section"><strong>🎀 Cách dùng:</strong> <span id="modal-usage"></span></div>
+            <div class="info-section" style="margin-top: 25px;">
+                <strong>🌳 Bản đồ từ vựng:</strong>
+                <div class="tree-container" id="tree-container"></div>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    const database = [
-        // DỄ (50)
-        { level: "easy", hanzi: "我", pinyinFull: "wǒ", missingPart: "_ǒ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wǒ", correctIdx: 0, options: ["w", "y", "v", "m"], fullSounds: ["wǒ", "yǒ", "vǒ", "mǒ"], exp: "Tôi. Âm 'w'." },
-        { level: "easy", hanzi: "你", pinyinFull: "nǐ", missingPart: "_ǐ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nǐ", correctIdx: 1, options: ["m", "n", "l", "r"], fullSounds: ["mǐ", "nǐ", "lǐ", "rǐ"], exp: "Bạn. Âm 'n'." },
-        { level: "easy", hanzi: "他", pinyinFull: "tā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tā", correctIdx: 3, options: ["d", "p", "b", "t"], fullSounds: ["dā", "pā", "bā", "tā"], exp: "Anh ấy. Âm 't' bật hơi." },
-        { level: "easy", hanzi: "她", pinyinFull: "tā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ta2", correctIdx: 3, options: ["d", "p", "b", "t"], fullSounds: ["dā", "pā", "bā", "tā"], exp: "Cô ấy." },
-        { level: "easy", hanzi: "它", pinyinFull: "tā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ta3", correctIdx: 3, options: ["d", "p", "b", "t"], fullSounds: ["dā", "pā", "bā", "tā"], exp: "Nó (đồ vật/con vật)." },
-        { level: "easy", hanzi: "爸", pinyinFull: "bà", missingPart: "_à", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bà", correctIdx: 1, options: ["p", "b", "d", "t"], fullSounds: ["pà", "bà", "dà", "tà"], exp: "Bố. Âm 'b' không bật hơi." },
-        { level: "easy", hanzi: "媽", pinyinFull: "mā", missingPart: "_ā", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mā", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["mā", "nā", "lā", "hā"], exp: "Mẹ. Âm mũi 'm'." },
-        { level: "easy", hanzi: "哥", pinyinFull: "gē", missingPart: "_ē", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gē", correctIdx: 2, options: ["k", "h", "g", "d"], fullSounds: ["kē", "hē", "gē", "dē"], exp: "Anh trai. Âm cuống họng 'g'." },
-        { level: "easy", hanzi: "弟", pinyinFull: "dì", missingPart: "_ì", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dì", correctIdx: 1, options: ["t", "d", "b", "p"], fullSounds: ["tì", "dì", "bì", "pì"], exp: "Em trai. Âm 'd' không bật hơi." },
-        { level: "easy", hanzi: "姐", pinyinFull: "jiě", missingPart: "_iě", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiě", correctIdx: 0, options: ["j", "q", "x", "z"], fullSounds: ["jiě", "qiě", "xiě", "ziě"], exp: "Chị gái. Âm mặt lưỡi 'j'." },
-        { level: "easy", hanzi: "妹", pinyinFull: "mèi", missingPart: "_èi", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mèi", correctIdx: 2, options: ["n", "l", "m", "f"], fullSounds: ["nèi", "lèi", "mèi", "fèi"], exp: "Em gái." },
-        { level: "easy", hanzi: "大", pinyinFull: "dà", missingPart: "_à", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dà", correctIdx: 0, options: ["d", "t", "b", "p"], fullSounds: ["dà", "tà", "bà", "pà"], exp: "To lớn." },
-        { level: "easy", hanzi: "小", pinyinFull: "xiǎo", missingPart: "_iǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiǎo", correctIdx: 2, options: ["s", "sh", "x", "q"], fullSounds: ["siǎo", "shiǎo", "xiǎo", "qiǎo"], exp: "Nhỏ bé. Âm 'x'." },
-        { level: "easy", hanzi: "多", pinyinFull: "duō", missingPart: "_uō", img: "https://api.dicebear.com/7.x/shapes/svg?seed=duō", correctIdx: 0, options: ["d", "t", "g", "k"], fullSounds: ["duō", "tuō", "guō", "kuō"], exp: "Nhiều." },
-        { level: "easy", hanzi: "少", pinyinFull: "shǎo", missingPart: "_ǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shǎo", correctIdx: 1, options: ["s", "sh", "x", "ch"], fullSounds: ["sǎo", "shǎo", "xiǎo", "chǎo"], exp: "Ít. Âm 'sh' uốn lưỡi." },
-        { level: "easy", hanzi: "好", pinyinFull: "hǎo", missingPart: "_ǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hǎo", correctIdx: 3, options: ["k", "g", "f", "h"], fullSounds: ["kǎo", "gǎo", "fǎo", "hǎo"], exp: "Tốt / Khỏe." },
-        { level: "easy", hanzi: "壞", pinyinFull: "huài", missingPart: "_uài", img: "https://api.dicebear.com/7.x/shapes/svg?seed=huài", correctIdx: 1, options: ["k", "h", "g", "f"], fullSounds: ["kuài", "huài", "guài", "fuài"], exp: "Xấu / Hỏng." },
-        { level: "easy", hanzi: "男", pinyinFull: "nán", missingPart: "_án", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nán", correctIdx: 0, options: ["n", "l", "m", "r"], fullSounds: ["nán", "lán", "mán", "rán"], exp: "Nam giới." },
-        { level: "easy", hanzi: "女", pinyinFull: "nǚ", missingPart: "_ǚ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nǚ", correctIdx: 1, options: ["l", "n", "m", "r"], fullSounds: ["lǚ", "nǚ", "mǚ", "rǚ"], exp: "Nữ giới. Phân biệt n/l." },
-        { level: "easy", hanzi: "吃", pinyinFull: "chī", missingPart: "_ī", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chī", correctIdx: 2, options: ["c", "q", "ch", "zh"], fullSounds: ["cī", "qī", "chī", "zhī"], exp: "Ăn. Âm 'ch' bật hơi uốn lưỡi." },
-        { level: "easy", hanzi: "喝", pinyinFull: "hē", missingPart: "_ē", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hē", correctIdx: 1, options: ["k", "h", "g", "f"], fullSounds: ["kē", "hē", "gē", "fē"], exp: "Uống." },
-        { level: "easy", hanzi: "買", pinyinFull: "mǎi", missingPart: "_ǎi", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mǎi", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["mǎi", "nǎi", "lǎi", "hǎi"], exp: "Mua." },
-        { level: "easy", hanzi: "賣", pinyinFull: "mài", missingPart: "_ài", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mài", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["mài", "nài", "lài", "hài"], exp: "Bán." },
-        { level: "easy", hanzi: "錢", pinyinFull: "qián", missingPart: "_ián", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qián", correctIdx: 3, options: ["x", "j", "ch", "q"], fullSounds: ["xián", "jián", "chián", "qián"], exp: "Tiền bạc. Âm 'q' bật hơi." },
-        { level: "easy", hanzi: "貴", pinyinFull: "guì", missingPart: "_uì", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guì", correctIdx: 1, options: ["k", "g", "h", "d"], fullSounds: ["kuì", "guì", "huì", "duì"], exp: "Đắt." },
-        { level: "easy", hanzi: "累", pinyinFull: "lèi", missingPart: "_èi", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lèi", correctIdx: 2, options: ["n", "r", "l", "m"], fullSounds: ["nèi", "rèi", "lèi", "mèi"], exp: "Mệt mỏi." },
-        { level: "easy", hanzi: "忙", pinyinFull: "máng", missingPart: "_áng", img: "https://api.dicebear.com/7.x/shapes/svg?seed=máng", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["máng", "náng", "láng", "háng"], exp: "Bận rộn." },
-        { level: "easy", hanzi: "去", pinyinFull: "qù", missingPart: "_ù", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qù", correctIdx: 1, options: ["j", "q", "x", "ch"], fullSounds: ["jù", "qù", "xù", "chù"], exp: "Đi." },
-        { level: "easy", hanzi: "來", pinyinFull: "lái", missingPart: "_ái", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lái", correctIdx: 3, options: ["n", "m", "r", "l"], fullSounds: ["nái", "mái", "rái", "lái"], exp: "Đến." },
-        { level: "easy", hanzi: "看", pinyinFull: "kàn", missingPart: "_àn", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kàn", correctIdx: 1, options: ["g", "k", "h", "d"], fullSounds: ["gàn", "kàn", "hàn", "dàn"], exp: "Nhìn / Xem." },
-        { level: "easy", hanzi: "聽", pinyinFull: "tīng", missingPart: "_īng", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tīng", correctIdx: 0, options: ["t", "d", "q", "j"], fullSounds: ["tīng", "dīng", "qīng", "jīng"], exp: "Nghe." },
-        { level: "easy", hanzi: "說", pinyinFull: "shuō", missingPart: "_uō", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shuō", correctIdx: 2, options: ["s", "x", "sh", "ch"], fullSounds: ["suō", "xuō", "shuō", "chuō"], exp: "Nói. Âm 'sh'." },
-        { level: "easy", hanzi: "讀", pinyinFull: "dú", missingPart: "_ú", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dú", correctIdx: 0, options: ["d", "t", "b", "p"], fullSounds: ["dú", "tú", "bú", "pú"], exp: "Đọc." },
-        { level: "easy", hanzi: "寫", pinyinFull: "xiě", missingPart: "_iě", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiě", correctIdx: 3, options: ["s", "sh", "q", "x"], fullSounds: ["siě", "shiě", "qiě", "xiě"], exp: "Viết." },
-        { level: "easy", hanzi: "學", pinyinFull: "xué", missingPart: "_ué", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xué", correctIdx: 1, options: ["sh", "x", "s", "q"], fullSounds: ["shué", "xué", "sué", "qué"], exp: "Học tập." },
-        { level: "easy", hanzi: "校", pinyinFull: "xiào", missingPart: "_iào", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiào", correctIdx: 3, options: ["s", "sh", "q", "x"], fullSounds: ["siào", "shiào", "qiào", "xiào"], exp: "Trường học." },
-        { level: "easy", hanzi: "書", pinyinFull: "shū", missingPart: "_ū", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shū", correctIdx: 0, options: ["sh", "s", "x", "ch"], fullSounds: ["shū", "sū", "xū", "chū"], exp: "Sách." },
-        { level: "easy", hanzi: "筆", pinyinFull: "bǐ", missingPart: "_ǐ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bǐ", correctIdx: 1, options: ["p", "b", "d", "t"], fullSounds: ["pǐ", "bǐ", "dǐ", "tǐ"], exp: "Bút." },
-        { level: "easy", hanzi: "水", pinyinFull: "shuǐ", missingPart: "_uǐ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shuǐ", correctIdx: 2, options: ["s", "x", "sh", "ch"], fullSounds: ["suǐ", "xuǐ", "shuǐ", "chuǐ"], exp: "Nước." },
-        { level: "easy", hanzi: "茶", pinyinFull: "chá", missingPart: "_á", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chá", correctIdx: 1, options: ["c", "ch", "zh", "sh"], fullSounds: ["cá", "chá", "zhá", "shá"], exp: "Trà." },
-        { level: "easy", hanzi: "飯", pinyinFull: "fàn", missingPart: "_àn", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fàn", correctIdx: 0, options: ["f", "h", "g", "k"], fullSounds: ["fàn", "hàn", "gàn", "kàn"], exp: "Cơm." },
-        { level: "easy", hanzi: "肉", pinyinFull: "ròu", missingPart: "_òu", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ròu", correctIdx: 3, options: ["l", "n", "m", "r"], fullSounds: ["lòu", "nòu", "mòu", "ròu"], exp: "Thịt." },
-        { level: "easy", hanzi: "魚", pinyinFull: "yú", missingPart: "_ú", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yú", correctIdx: 1, options: ["w", "y", "r", "l"], fullSounds: ["wú", "yú", "rú", "lú"], exp: "Cá. Âm 'y'." },
-        { level: "easy", hanzi: "狗", pinyinFull: "gǒu", missingPart: "_ǒu", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gǒu", correctIdx: 2, options: ["k", "h", "g", "d"], fullSounds: ["kǒu", "hǒu", "gǒu", "dǒu"], exp: "Con chó." },
-        { level: "easy", hanzi: "貓", pinyinFull: "māo", missingPart: "_āo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=māo", correctIdx: 0, options: ["m", "n", "l", "h"], fullSounds: ["māo", "nāo", "lāo", "hāo"], exp: "Con mèo." },
-        { level: "easy", hanzi: "豬", pinyinFull: "zhū", missingPart: "_ū", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zhū", correctIdx: 1, options: ["ch", "zh", "z", "j"], fullSounds: ["chū", "zhū", "zū", "jū"], exp: "Con lợn. Âm 'zh'." },
-        { level: "easy", hanzi: "牛", pinyinFull: "niú", missingPart: "_iú", img: "https://api.dicebear.com/7.x/shapes/svg?seed=niú", correctIdx: 0, options: ["n", "l", "m", "r"], fullSounds: ["niú", "liú", "miú", "riú"], exp: "Con bò." },
-        { level: "easy", hanzi: "羊", pinyinFull: "yáng", missingPart: "_áng", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yáng", correctIdx: 2, options: ["w", "r", "y", "l"], fullSounds: ["wáng", "ráng", "yáng", "láng"], exp: "Con cừu." },
-        { level: "easy", hanzi: "鳥", pinyinFull: "niǎo", missingPart: "_iǎo", img: "https://api.dicebear.com/7.x/shapes/svg?seed=niǎo", correctIdx: 0, options: ["n", "l", "m", "r"], fullSounds: ["niǎo", "liǎo", "miǎo", "riǎo"], exp: "Con chim." },
-        { level: "easy", hanzi: "馬", pinyinFull: "mǎ", missingPart: "_ǎ", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mǎ", correctIdx: 3, options: ["n", "l", "f", "m"], fullSounds: ["nǎ", "lǎ", "fǎ", "mǎ"], exp: "Con ngựa." },
+    <script>
+        const rawText = `【週末的臺北聚會】
+(場景一：歡迎與喝茶)
+張怡君： 李明華先生，陳月美小姐，歡迎！歡迎！請進，請坐。今天天氣很好。這是我家。
+李明華： 張怡君小姐，你好。這房子很漂亮。這房子是張小姐的嗎？
+張怡君： 是的。這房子是我家。王開文先生，白茹玉小姐，你們好！歡迎來臺北！
+王開文： 張小姐，你好。我們很喜歡臺北。臺北很好玩。
+白茹玉： 是的，臺北很好看。請問，馬安同先生來嗎？
+張怡君： 馬安同先生明天早上來。
+白茹玉： 田中誠一先生呢？
+張怡君： 田中誠一先生也明天早上來。
+李老師： 張小姐，請問你們想喝神麼？
+張怡君： 李老師，您要喝茶，還是喝咖啡？
+李老師： 我要喝台灣烏龍茶。這烏龍茶很好喝。
+張怡君： 陳小姐，您呢？您要喝烏龍茶嗎？
+陳月美： 對不起，我沒有喝茶。我喜歡喝美國咖啡。
+王開文： 我也喝咖啡。
+白茹玉： 我喝日本茶。有日本茶嗎？
+張怡君： 對不起，沒有日本茶，這有台灣烏龍茶。台灣烏龍茶很好喝，要喝嗎？
+白茹玉： 好啊，喝台灣烏龍茶。謝謝！
+張怡君： 不客氣。這有兩部中文書。請看書。
 
-        // TRUNG BÌNH (50)
-        { level: "med", hanzi: "愛", pinyinFull: "ài", missingPart: "_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=ài", correctIdx: 1, options: ["ái", "ài", "ǎi", "āi"], fullSounds: ["ái", "ài", "ǎi", "āi"], exp: "Tình yêu. Thanh 4 dứt khoát." },
-        { level: "med", hanzi: "恨", pinyinFull: "hèn", missingPart: "h_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hèn", correctIdx: 0, options: ["èn", "én", "ěn", "ēn"], fullSounds: ["hèn", "hén", "hěn", "hēn"], exp: "Căm hận." },
-        { level: "med", hanzi: "心", pinyinFull: "xīn", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīn", correctIdx: 3, options: ["íng", "ǐn", "ìn", "īn"], fullSounds: ["xíng", "xǐn", "xìn", "xīn"], exp: "Trái tim / Tâm trí." },
-        { level: "med", hanzi: "夢", pinyinFull: "mèng", missingPart: "m_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mèng", correctIdx: 2, options: ["én", "ěn", "èng", "ēng"], fullSounds: ["mén", "měn", "mèng", "mēng"], exp: "Giấc mơ. Thanh 4." },
-        { level: "med", hanzi: "劍", pinyinFull: "jiàn", missingPart: "j_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiàn", correctIdx: 0, options: ["iàn", "ián", "iǎn", "iān"], fullSounds: ["jiàn", "jián", "jiǎn", "jiān"], exp: "Thanh kiếm." },
-        { level: "med", hanzi: "魔", pinyinFull: "mó", missingPart: "m_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=mó", correctIdx: 1, options: ["ò", "ó", "ǒ", "ō"], fullSounds: ["mò", "mó", "mǒ", "mō"], exp: "Ma quỷ / Phép thuật. Thanh 2." },
-        { level: "med", hanzi: "神", pinyinFull: "shén", missingPart: "sh_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shén", correctIdx: 0, options: ["én", "èn", "ěn", "ēn"], fullSounds: ["shén", "shèn", "shěn", "shēn"], exp: "Thần linh. Thanh 2." },
-        { level: "med", hanzi: "鬼", pinyinFull: "guǐ", missingPart: "g_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guǐ", correctIdx: 2, options: ["uī", "uí", "uǐ", "uì"], fullSounds: ["guī", "guí", "guǐ", "guì"], exp: "Ma / Quỷ. Thanh 3." },
-        { level: "med", hanzi: "妖", pinyinFull: "yāo", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yāo", correctIdx: 3, options: ["ào", "áo", "ǎo", "āo"], fullSounds: ["yào", "yáo", "yǎo", "yāo"], exp: "Yêu quái. Thanh 1." },
-        { level: "med", hanzi: "怪", pinyinFull: "guài", missingPart: "g_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guài", correctIdx: 0, options: ["uài", "uái", "uǎi", "uāi"], fullSounds: ["guài", "guái", "guǎi", "guāi"], exp: "Kỳ lạ / Quái vật." },
-        { level: "med", hanzi: "仙", pinyinFull: "xiān", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiān", correctIdx: 1, options: ["iǎn", "iān", "iàn", "ián"], fullSounds: ["xiǎn", "xiān", "xiàn", "xián"], exp: "Thần tiên." },
-        { level: "med", hanzi: "龍", pinyinFull: "lóng", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lóng", correctIdx: 2, options: ["òng", "ǒng", "óng", "ōng"], fullSounds: ["lòng", "lǒng", "lóng", "lōng"], exp: "Con rồng." },
-        { level: "med", hanzi: "靈", pinyinFull: "líng", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=líng", correctIdx: 0, options: ["íng", "ǐng", "ìng", "īng"], fullSounds: ["líng", "lǐng", "lìng", "līng"], exp: "Linh hồn / Linh thiêng." },
-        { level: "med", hanzi: "魂", pinyinFull: "hún", missingPart: "h_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hún", correctIdx: 3, options: ["ùn", "ǔn", "ūn", "ún"], fullSounds: ["hùn", "hǔn", "hūn", "hún"], exp: "Linh hồn." },
-        { level: "med", hanzi: "飛", pinyinFull: "fēi", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fēi", correctIdx: 1, options: ["éi", "ēi", "ěi", "èi"], fullSounds: ["féi", "fēi", "fěi", "fèi"], exp: "Bay lượn." },
-        { level: "med", hanzi: "哭", pinyinFull: "kū", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kū", correctIdx: 2, options: ["ù", "ǔ", "ū", "ú"], fullSounds: ["kù", "kǔ", "kū", "kú"], exp: "Khóc." },
-        { level: "med", hanzi: "笑", pinyinFull: "xiào", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xiào", correctIdx: 0, options: ["iào", "iāo", "iáo", "iǎo"], fullSounds: ["xiào", "xiāo", "xiáo", "xiǎo"], exp: "Cười." },
-        { level: "med", hanzi: "血", pinyinFull: "xuè", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xuè", correctIdx: 1, options: ["ué", "uè", "uě", "uē"], fullSounds: ["xué", "xuè", "xuě", "xuē"], exp: "Máu." },
-        { level: "med", hanzi: "淚", pinyinFull: "lèi", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lèi", correctIdx: 3, options: ["éi", "ěi", "ēi", "èi"], fullSounds: ["léi", "lěi", "lēi", "lèi"], exp: "Nước mắt." },
-        { level: "med", hanzi: "痛", pinyinFull: "tòng", missingPart: "t_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tòng", correctIdx: 0, options: ["òng", "óng", "ǒng", "ōng"], fullSounds: ["tòng", "tóng", "tǒng", "tōng"], exp: "Đau đớn." },
-        { level: "med", hanzi: "工", pinyinFull: "gōng", missingPart: "g_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gōng", correctIdx: 1, options: ["óng", "ōng", "ǒng", "òng"], fullSounds: ["góng", "gōng", "gǒng", "gòng"], exp: "Công việc / Làm thêm." },
-        { level: "med", hanzi: "薪", pinyinFull: "xīn", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīn", correctIdx: 2, options: ["ǐn", "ìn", "īn", "ín"], fullSounds: ["xǐn", "xìn", "xīn", "xín"], exp: "Lương bổng (薪水)." },
-        { level: "med", hanzi: "費", pinyinFull: "fèi", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fèi", correctIdx: 0, options: ["èi", "ěi", "ēi", "éi"], fullSounds: ["fèi", "fěi", "fēi", "féi"], exp: "Chi phí." },
-        { level: "med", hanzi: "班", pinyinFull: "bān", missingPart: "b_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bān", correctIdx: 3, options: ["àn", "ǎn", "án", "ān"], fullSounds: ["bàn", "bǎn", "bán", "bān"], exp: "Lớp học / Ca làm." },
-        { level: "med", hanzi: "課", pinyinFull: "kè", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kè", correctIdx: 1, options: ["é", "è", "ě", "ē"], fullSounds: ["ké", "kè", "kě", "kē"], exp: "Bài học / Tiết học." },
-        { level: "med", hanzi: "宿", pinyinFull: "sù", missingPart: "s_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=sù", correctIdx: 2, options: ["ū", "ú", "ù", "ǔ"], fullSounds: ["sū", "sú", "sù", "sǔ"], exp: "Ký túc xá." },
-        { level: "med", hanzi: "租", pinyinFull: "zū", missingPart: "z_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zū", correctIdx: 0, options: ["ū", "ú", "ù", "ǔ"], fullSounds: ["zū", "zú", "zù", "zǔ"], exp: "Thuê mướn." },
-        { level: "med", hanzi: "房", pinyinFull: "fáng", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fáng", correctIdx: 1, options: ["āng", "áng", "ǎng", "àng"], fullSounds: ["fāng", "fáng", "fǎng", "fàng"], exp: "Phòng / Căn nhà." },
-        { level: "med", hanzi: "店", pinyinFull: "diàn", missingPart: "d_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=diàn", correctIdx: 2, options: ["iān", "ián", "iàn", "iǎn"], fullSounds: ["diān", "dián", "diàn", "diǎn"], exp: "Cửa hàng." },
-        { level: "med", hanzi: "客", pinyinFull: "kè", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kè", correctIdx: 3, options: ["ē", "é", "ě", "è"], fullSounds: ["kē", "ké", "kě", "kè"], exp: "Khách hàng." },
-        { level: "med", hanzi: "冰", pinyinFull: "bīng", missingPart: "b_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bīng", correctIdx: 0, options: ["īng", "íng", "ǐng", "ìng"], fullSounds: ["bīng", "bíng", "bǐng", "bìng"], exp: "Đá / Lạnh." },
-        { level: "med", hanzi: "熱", pinyinFull: "rè", missingPart: "r_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=rè", correctIdx: 1, options: ["é", "è", "ě", "ē"], fullSounds: ["ré", "rè", "rě", "rē"], exp: "Nóng." },
-        { level: "med", hanzi: "冷", pinyinFull: "lěng", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lěng", correctIdx: 2, options: ["ēng", "éng", "ěng", "èng"], fullSounds: ["lēng", "léng", "lěng", "lèng"], exp: "Lạnh lẽo." },
-        { level: "med", hanzi: "甜", pinyinFull: "tián", missingPart: "t_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tián", correctIdx: 3, options: ["iān", "iàn", "iǎn", "ián"], fullSounds: ["tiān", "tiàn", "tiǎn", "tián"], exp: "Ngọt." },
-        { level: "med", hanzi: "苦", pinyinFull: "kǔ", missingPart: "k_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kǔ", correctIdx: 0, options: ["ǔ", "ù", "ū", "ú"], fullSounds: ["kǔ", "kù", "kū", "kú"], exp: "Đắng / Khổ." },
-        { level: "med", hanzi: "辣", pinyinFull: "là", missingPart: "l_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=là", correctIdx: 1, options: ["á", "à", "ǎ", "ā"], fullSounds: ["lá", "là", "lǎ", "lā"], exp: "Cay." },
-        { level: "med", hanzi: "咸", pinyinFull: "xián", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xián", correctIdx: 2, options: ["iān", "iàn", "ián", "iǎn"], fullSounds: ["xiān", "xiàn", "xián", "xiǎn"], exp: "Mặn." },
-        { level: "med", hanzi: "酸", pinyinFull: "suān", missingPart: "s_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=suān", correctIdx: 3, options: ["uàn", "uǎn", "uán", "uān"], fullSounds: ["suàn", "suǎn", "suán", "suān"], exp: "Chua." },
-        { level: "med", hanzi: "早", pinyinFull: "zǎo", missingPart: "z_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zǎo", correctIdx: 0, options: ["ǎo", "ào", "āo", "áo"], fullSounds: ["zǎo", "zào", "zāo", "záo"], exp: "Sớm." },
-        { level: "med", hanzi: "晚", pinyinFull: "wǎn", missingPart: "w_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wǎn", correctIdx: 1, options: ["àn", "ǎn", "ān", "án"], fullSounds: ["wàn", "wǎn", "wān", "wán"], exp: "Muộn / Buổi tối." },
-        { level: "med", hanzi: "夜", pinyinFull: "yè", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yè", correctIdx: 2, options: ["ē", "é", "è", "ě"], fullSounds: ["yē", "yé", "yè", "yě"], exp: "Ban đêm." },
-        { level: "med", hanzi: "晨", pinyinFull: "chén", missingPart: "ch_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chén", correctIdx: 3, options: ["ēn", "èn", "ěn", "én"], fullSounds: ["chēn", "chèn", "chěn", "chén"], exp: "Sáng sớm." },
-        { level: "med", hanzi: "春", pinyinFull: "chūn", missingPart: "ch_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chūn", correctIdx: 0, options: ["ūn", "ún", "ǔn", "ùn"], fullSounds: ["chūn", "chún", "chǔn", "chùn"], exp: "Mùa xuân." },
-        { level: "med", hanzi: "夏", pinyinFull: "xià", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xià", correctIdx: 1, options: ["iā", "ià", "iǎ", "iá"], fullSounds: ["xiā", "xià", "xiǎ", "xiá"], exp: "Mùa hè." },
-        { level: "med", hanzi: "秋", pinyinFull: "qiū", missingPart: "q_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qiū", correctIdx: 2, options: ["iú", "iù", "iū", "iǔ"], fullSounds: ["qiú", "qiù", "qiū", "qiǔ"], exp: "Mùa thu." },
-        { level: "med", hanzi: "冬", pinyinFull: "dōng", missingPart: "d_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dōng", correctIdx: 3, options: ["òng", "ǒng", "óng", "ōng"], fullSounds: ["dòng", "dǒng", "dóng", "dōng"], exp: "Mùa đông." },
-        { level: "med", hanzi: "風", pinyinFull: "fēng", missingPart: "f_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=fēng", correctIdx: 0, options: ["ēng", "éng", "ěng", "èng"], fullSounds: ["fēng", "féng", "fěng", "fèng"], exp: "Cơn gió." },
-        { level: "med", hanzi: "雨", pinyinFull: "yǔ", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yǔ", correctIdx: 1, options: ["ú", "ǔ", "ù", "ū"], fullSounds: ["yú", "yǔ", "yù", "yū"], exp: "Cơn mưa." },
-        { level: "med", hanzi: "雪", pinyinFull: "xuě", missingPart: "x_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xuě", correctIdx: 2, options: ["ué", "uè", "uě", "uē"], fullSounds: ["xué", "xuè", "xuě", "xuē"], exp: "Tuyết." },
-        { level: "med", hanzi: "雲", pinyinFull: "yún", missingPart: "y_", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yún", correctIdx: 3, options: ["ūn", "ùn", "ǔn", "ún"], fullSounds: ["yūn", "yùn", "yǔn", "yún"], exp: "Đám mây." },
+(場景二：照片與家人)
+陳月美： 這照片很好看。請問這照片有誰？這照片有很多人。
+張怡君： 這照片有我家人：有爸爸、媽媽、哥哥、姐姐，也有妹妹。
+陳月美： 張小姐，你有幾兄弟姐妹？
+張怡君： 我有兄弟，也有姐妹。我們家有六人。
+李明華： 這照片的人叫什麼名字？
+張怡君： 她名字叫張怡君。是我。
+李明華： 伯母好嗎？
+張怡君： 伯母很好。謝謝。明天早上我去接伯母，可以嗎？
+李明華： 可以。
 
-        // KHÓ (50)
-        { level: "hard", hanzi: "這", pinyinFull: "zhè", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zhè", correctIdx: 2, options: ["zè", "jè", "zhè", "chè"], fullSounds: ["zè", "jè", "zhè", "chè"], exp: "Cái này. Âm 'zh' uốn lưỡi." },
-        { level: "hard", hanzi: "那", pinyinFull: "nà", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=nà", correctIdx: 1, options: ["là", "nà", "mà", "rà"], fullSounds: ["là", "nà", "mà", "rà"], exp: "Cái kia." },
-        { level: "hard", hanzi: "誰", pinyinFull: "shéi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shéi", correctIdx: 3, options: ["sé", "suí", "xuí", "shéi"], fullSounds: ["sé", "suí", "xuí", "shéi"], exp: "Ai?." },
-        { level: "hard", hanzi: "什", pinyinFull: "shén", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shén", correctIdx: 0, options: ["shén", "sén", "xén", "chén"], fullSounds: ["shén", "sén", "xén", "chén"], exp: "Cái gì." },
-        { level: "hard", hanzi: "麼", pinyinFull: "me", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=me", correctIdx: 1, options: ["mè", "me", "mō", "mā"], fullSounds: ["mè", "me", "mō", "mā"], exp: "Từ để hỏi (khinh thanh)." },
-        { level: "hard", hanzi: "一", pinyinFull: "yī", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yī", correctIdx: 0, options: ["yī", "yí", "yǐ", "yì"], fullSounds: ["yī", "yí", "yǐ", "yì"], exp: "Số 1." },
-        { level: "hard", hanzi: "百", pinyinFull: "bǎi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bǎi", correctIdx: 2, options: ["pǎi", "dǎi", "bǎi", "tǎi"], fullSounds: ["pǎi", "dǎi", "bǎi", "tǎi"], exp: "Một trăm." },
-        { level: "hard", hanzi: "千", pinyinFull: "qiān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qiān", correctIdx: 1, options: ["jiān", "qiān", "xiān", "ciān"], fullSounds: ["jiān", "qiān", "xiān", "ciān"], exp: "Một nghìn." },
-        { level: "hard", hanzi: "萬", pinyinFull: "wàn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wàn", correctIdx: 3, options: ["màn", "uàn", "vàn", "wàn"], fullSounds: ["màn", "uàn", "vàn", "wàn"], exp: "Một vạn." },
-        { level: "hard", hanzi: "天", pinyinFull: "tiān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tiān", correctIdx: 0, options: ["tiān", "diān", "piān", "qiān"], fullSounds: ["tiān", "diān", "piān", "qiān"], exp: "Bầu trời / Ngày." },
-        { level: "hard", hanzi: "地", pinyinFull: "dì", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dì", correctIdx: 2, options: ["tì", "bì", "dì", "pì"], fullSounds: ["tì", "bì", "dì", "pì"], exp: "Mặt đất." },
-        { level: "hard", hanzi: "星", pinyinFull: "xīng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīng", correctIdx: 1, options: ["sīng", "xīng", "shīng", "qīng"], fullSounds: ["sīng", "xīng", "shīng", "qīng"], exp: "Ngôi sao." },
-        { level: "hard", hanzi: "月", pinyinFull: "yuè", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yuè", correctIdx: 0, options: ["yuè", "ruè", "lüè", "nüè"], fullSounds: ["yuè", "ruè", "lüè", "nüè"], exp: "Mặt trăng / Tháng." },
-        { level: "hard", hanzi: "日", pinyinFull: "rì", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=rì", correctIdx: 3, options: ["lì", "zì", "zhì", "rì"], fullSounds: ["lì", "zì", "zhì", "rì"], exp: "Mặt trời / Ngày." },
-        { level: "hard", hanzi: "光", pinyinFull: "guāng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=guāng", correctIdx: 0, options: ["guāng", "kuāng", "huāng", "duāng"], fullSounds: ["guāng", "kuāng", "huāng", "duāng"], exp: "Ánh sáng." },
-        { level: "hard", hanzi: "影", pinyinFull: "yǐng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yǐng", correctIdx: 1, options: ["wǐng", "yǐng", "rǐng", "lǐng"], fullSounds: ["wǐng", "yǐng", "rǐng", "lǐng"], exp: "Bóng râm." },
-        { level: "hard", hanzi: "電", pinyinFull: "diàn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=diàn", correctIdx: 2, options: ["tiàn", "biàn", "diàn", "piàn"], fullSounds: ["tiàn", "biàn", "diàn", "piàn"], exp: "Điện." },
-        { level: "hard", hanzi: "車", pinyinFull: "chē", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=chē", correctIdx: 3, options: ["cē", "zhē", "qē", "chē"], fullSounds: ["cē", "zhē", "qē", "chē"], exp: "Xe cộ." },
-        { level: "hard", hanzi: "路", pinyinFull: "lù", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lù", correctIdx: 0, options: ["lù", "nù", "rù", "mù"], fullSounds: ["lù", "nù", "rù", "mù"], exp: "Con đường." },
-        { level: "hard", hanzi: "橋", pinyinFull: "qiáo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=qiáo", correctIdx: 1, options: ["jiáo", "qiáo", "xiáo", "ciáo"], fullSounds: ["jiáo", "qiáo", "xiáo", "ciáo"], exp: "Cây cầu." },
-        { level: "hard", hanzi: "真", pinyinFull: "zhēn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zhēn", correctIdx: 2, options: ["zēn", "jēn", "zhēn", "chēn"], fullSounds: ["zēn", "jēn", "zhēn", "chēn"], exp: "Chân thật." },
-        { level: "hard", hanzi: "假", pinyinFull: "jiǎ", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiǎ", correctIdx: 3, options: ["qiǎ", "xiǎ", "zhiǎ", "jiǎ"], fullSounds: ["qiǎ", "xiǎ", "zhiǎ", "jiǎ"], exp: "Giả dối." },
-        { level: "hard", hanzi: "高", pinyinFull: "gāo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=gāo", correctIdx: 0, options: ["gāo", "kāo", "hāo", "dāo"], fullSounds: ["gāo", "kāo", "hāo", "dāo"], exp: "Cao lớn." },
-        { level: "hard", hanzi: "低", pinyinFull: "dī", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dī", correctIdx: 1, options: ["tī", "dī", "pī", "bī"], fullSounds: ["tī", "dī", "pī", "bī"], exp: "Thấp." },
-        { level: "hard", hanzi: "新", pinyinFull: "xīn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=xīn", correctIdx: 2, options: ["sīn", "shīn", "xīn", "qīn"], fullSounds: ["sīn", "shīn", "xīn", "qīn"], exp: "Mới mẻ." },
-        { level: "hard", hanzi: "舊", pinyinFull: "jiù", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiù", correctIdx: 3, options: ["qiù", "xiù", "zhiù", "jiù"], fullSounds: ["qiù", "xiù", "zhiù", "jiù"], exp: "Cũ kỹ." },
-        { level: "hard", hanzi: "長", pinyinFull: "cháng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=cháng", correctIdx: 0, options: ["cháng", "cáng", "zháng", "sháng"], fullSounds: ["cháng", "cáng", "zháng", "sháng"], exp: "Dài." },
-        { level: "hard", hanzi: "短", pinyinFull: "duǎn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=duǎn", correctIdx: 1, options: ["tuǎn", "duǎn", "dǎn", "tǎn"], fullSounds: ["tuǎn", "duǎn", "dǎn", "tǎn"], exp: "Ngắn." },
-        { level: "hard", hanzi: "快", pinyinFull: "kuài", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=kuài", correctIdx: 2, options: ["huài", "guài", "kuài", "fuài"], fullSounds: ["huài", "guài", "kuài", "fuài"], exp: "Nhanh." },
-        { level: "hard", hanzi: "慢", pinyinFull: "màn", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=màn", correctIdx: 3, options: ["nàn", "làn", "ràn", "màn"], fullSounds: ["nàn", "làn", "ràn", "màn"], exp: "Chậm." },
-        { level: "hard", hanzi: "黑", pinyinFull: "hēi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hēi", correctIdx: 0, options: ["hēi", "kēi", "gēi", "fēi"], fullSounds: ["hēi", "kēi", "gēi", "fēi"], exp: "Màu đen." },
-        { level: "hard", hanzi: "白", pinyinFull: "bái", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=bái", correctIdx: 1, options: ["pái", "bái", "dái", "tái"], fullSounds: ["pái", "bái", "dái", "tái"], exp: "Màu trắng." },
-        { level: "hard", hanzi: "紅", pinyinFull: "hóng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hóng", correctIdx: 2, options: ["góng", "kóng", "hóng", "fóng"], fullSounds: ["góng", "kóng", "hóng", "fóng"], exp: "Màu đỏ." },
-        { level: "hard", hanzi: "綠", pinyinFull: "lǜ", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lǜ", correctIdx: 3, options: ["nǜ", "rǜ", "yǜ", "lǜ"], fullSounds: ["nǜ", "rǜ", "yǜ", "lǜ"], exp: "Màu xanh lá." },
-        { level: "hard", hanzi: "黃", pinyinFull: "huáng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=huáng", correctIdx: 0, options: ["huáng", "kuáng", "guáng", "fuáng"], fullSounds: ["huáng", "kuáng", "guáng", "fuáng"], exp: "Màu vàng." },
-        { level: "hard", hanzi: "藍", pinyinFull: "lán", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lán", correctIdx: 1, options: ["nán", "lán", "rán", "mán"], fullSounds: ["nán", "lán", "rán", "mán"], exp: "Màu xanh dương." },
-        { level: "hard", hanzi: "紫", pinyinFull: "zǐ", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=zǐ", correctIdx: 2, options: ["zhǐ", "cǐ", "zǐ", "sǐ"], fullSounds: ["zhǐ", "cǐ", "zǐ", "sǐ"], exp: "Màu tím." },
-        { level: "hard", hanzi: "花", pinyinFull: "huā", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=huā", correctIdx: 3, options: ["kuā", "guā", "fuā", "huā"], fullSounds: ["kuā", "guā", "fuā", "huā"], exp: "Bông hoa." },
-        { level: "hard", hanzi: "草", pinyinFull: "cǎo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=cǎo", correctIdx: 0, options: ["cǎo", "zǎo", "sǎo", "chǎo"], fullSounds: ["cǎo", "zǎo", "sǎo", "chǎo"], exp: "Cây cỏ. Âm 'c' bật hơi." },
-        { level: "hard", hanzi: "樹", pinyinFull: "shù", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shù", correctIdx: 1, options: ["sù", "shù", "xù", "chù"], fullSounds: ["sù", "shù", "xù", "chù"], exp: "Cái cây." },
-        { level: "hard", hanzi: "葉", pinyinFull: "yè", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=yè", correctIdx: 2, options: ["wè", "rè", "yè", "lè"], fullSounds: ["wè", "rè", "yè", "lè"], exp: "Chiếc lá." },
-        { level: "hard", hanzi: "林", pinyinFull: "lín", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=lín", correctIdx: 3, options: ["nín", "mín", "rín", "lín"], fullSounds: ["nín", "mín", "rín", "lín"], exp: "Khu rừng." },
-        { level: "hard", hanzi: "山", pinyinFull: "shān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=shān", correctIdx: 0, options: ["shān", "sān", "xiān", "chān"], fullSounds: ["shān", "sān", "xiān", "chān"], exp: "Ngọn núi." },
-        { level: "hard", hanzi: "海", pinyinFull: "hǎi", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hǎi", correctIdx: 1, options: ["kǎi", "hǎi", "gǎi", "fǎi"], fullSounds: ["kǎi", "hǎi", "gǎi", "fǎi"], exp: "Biển cả." },
-        { level: "hard", hanzi: "江", pinyinFull: "jiāng", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=jiāng", correctIdx: 2, options: ["qiāng", "xiāng", "jiāng", "zhāng"], fullSounds: ["qiāng", "xiāng", "jiāng", "zhāng"], exp: "Con sông." },
-        { level: "hard", hanzi: "河", pinyinFull: "hé", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hé", correctIdx: 3, options: ["ké", "gé", "fé", "hé"], fullSounds: ["ké", "gé", "fé", "hé"], exp: "Dòng sông." },
-        { level: "hard", hanzi: "湖", pinyinFull: "hú", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=hú", correctIdx: 0, options: ["hú", "kú", "gú", "fú"], fullSounds: ["hú", "kú", "gú", "fú"], exp: "Cái hồ." },
-        { level: "hard", hanzi: "島", pinyinFull: "dǎo", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=dǎo", correctIdx: 1, options: ["tǎo", "dǎo", "bǎo", "pǎo"], fullSounds: ["tǎo", "dǎo", "bǎo", "pǎo"], exp: "Hòn đảo." },
-        { level: "hard", hanzi: "臺", pinyinFull: "tái", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=tái", correctIdx: 2, options: ["dái", "pái", "tái", "bái"], fullSounds: ["dái", "pái", "tái", "bái"], exp: "Đài (Trong Đài Loan)." },
-        { level: "hard", hanzi: "灣", pinyinFull: "wān", missingPart: "_ _", img: "https://api.dicebear.com/7.x/shapes/svg?seed=wān", correctIdx: 3, options: ["yān", "mān", "vān", "wān"], fullSounds: ["yān", "mān", "vān", "wān"], exp: "Loan (Trong Đài Loan)." }
-    ];
+(場景三：新朋友與國籍)(明天早上)
+馬安同： 張小姐，你好。我是馬安同。
+張怡君： 馬先生，歡迎！請進。請問，這是誰？
+田中誠一： 你好，我姓田中，名字叫田中誠一。我是日本人。
+馬安同： 我是美國人。請問，李先生是哪國人？
+李明華： 我是台灣人。
+王開文： 我也是台灣人。
+陳月美： 請問田中先生的姓名是什麼？
+田中誠一： 我姓名是田中誠一。
+陳月美： 田中先生，您好。
 
-    let currentQuestions = [];
-    let qIndex = 0;
-    let isProcessing = false;
+(場景四：週末運動與愛好)
+李老師： 明天是週末。週末你們常做什麼？做運動嗎？
+田中誠一： 是的，週末我常運動。我喜歡打球。
+李老師： 你喜歡打神麼球？
+田中誠一： 我喜歡打網球、打棒球，也喜歡打籃球。馬先生呢？
+馬安同： 我沒有打球。我喜歡游泳，也喜歡踢足球。
+王開文： 我覺得踢足球很好玩。明天早上我們一起去踢足球，好不好？
+馬安同： 好啊。我們一起去運動。
+白茹玉： 我沒有喜歡運動。我喜歡看書，也喜歡聽音樂。
+陳月美： 你喜歡看什麼書？看中文書嗎？
+白茹玉： 是的，我看中文書。我也學中文。學中文很好玩。
 
-    const catEmotions = {
-        normal: "https://api.dicebear.com/7.x/bottts/svg?seed=blackcat&backgroundColor=transparent",
-        happy: "https://api.dicebear.com/7.x/bottts/svg?seed=happycat&backgroundColor=e2f5ec",
-        sad: "https://api.dicebear.com/7.x/bottts/svg?seed=sadcat&backgroundColor=ffeded"
-    };
+(場景五：看電影與晚飯)
+張怡君： 今天晚上你們想做什麼？
+李明華： 我想去看電影。
+陳月美： 看神麼電影？這部電影怎麼演啊？好看嗎？
+李明華： 這部電影很好看。我們一起去看電影，好吧？
+白茹玉： 好啊。可以。
+張怡君： 先看電影，還是先吃晚飯？
+田中誠一： 我們先吃晚飯，也看電影。我們一起吃晚飯，可以嗎？
+馬安同： 可以。我們吃越南菜，好不好？越南菜很好吃。
+張怡君： 好。我們去吃越南菜。
 
-    function startGame(level) {
-        currentQuestions = database.filter(q => q.level === level);
-        qIndex = 0;
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'block';
-        loadQuestion();
-    }
+(場景六：數字練習與結尾)
+王開文： 請問，這部中文書要幾塊？
+白茹玉： 這部書要九十塊。
+王開文： 這烏龍茶呢？
+白茹玉： 這烏龍茶要四十五塊。
+陳月美： 這房子要幾萬塊？
+張怡君： 這房子要八十萬零三十五塊。
+陳月美： 八十萬零三十五塊？這房子很漂亮。
+張怡君： 謝謝。
+田中誠一： 一、二、三、四、五、六、七、八、九、十。我們有八人。今天晚上一起去吃晚飯！
+李明華： 好。明天早上我去接家人，可以嗎？
+張怡君： 可以，謝謝你。
+李明華： 不客氣。
+張怡君： 我們照相吧！一、二、三，照相！這照片都很好看！`;
 
-    function loadQuestion() {
-        isProcessing = false;
-        const q = currentQuestions[qIndex];
+        const rawDict = {
+            "這": ["zhè", "Đây, này", "這房子很漂亮 (Ngôi nhà này rất đẹp)", "這個|zhè ge|Cái này", "這裡|zhè lǐ|Ở đây", "這樣|zhè yàng|Như thế này"],
+            "是": ["shì", "Là, vâng", "這房子是我家 (Ngôi nhà này là nhà tôi)", "是的|shì de|Đúng vậy", "但是|dàn shì|Nhưng mà", "是否|shì fǒu|Có phải không"],
+            "一": ["yī", "Một", "一、二、三 (1, 2, 3)", "一起|yì qǐ|Cùng nhau", "一半|yí bàn|Một nửa", "一定|yí dìng|Nhất định"],
+            "篇": ["piān", "Bài (lượng từ)", "這是一篇閱讀測驗", "篇幅|piān fú|Độ dài bài", "長篇|cháng piān|Bài dài", "短篇|duǎn piān|Truyện ngắn"],
+            "為": ["wèi / wéi", "Vì, cho / Là", "為您量身打造", "因為|yīn wèi|Bởi vì", "為了|wèi le|Để, vì", "以為|yǐ wéi|Cho rằng"],
+            "您": ["nín", "Ngài, bạn (kính trọng)", "請問您是哪國人？ (Xin hỏi ngài người nước nào?)", "您好|nín hǎo|Xin chào", "您們|nín men|Các ngài", "您早|nín zǎo|Chào buổi sáng"],
+            "的": ["de", "Của (trợ từ sở hữu)", "我的家人 (Người nhà của tôi)", "真的|zhēn de|Thật sự", "目的|mù dì|Mục đích", "你的|nǐ de|Của bạn"],
+            "有": ["yǒu", "Hữu, có", "有房子 (Có nhà)", "沒有|méi yǒu|Không có", "有趣|yǒu qù|Thú vị", "有名|yǒu míng|Nổi tiếng"],
+            "房": ["fáng", "Phòng, nhà", "房子 (Ngôi nhà)", "房間|fáng jiān|Căn phòng", "房東|fáng dōng|Chủ nhà", "書房|shū fáng|Phòng sách"],
+            "子": ["zi", "Tử (hậu tố)", "房子 (Ngôi nhà)", "孩子|hái zi|Đứa trẻ", "桌子|zhuō zi|Cái bàn", "椅子|yǐ zi|Cái ghế"],
+            "很": ["hěn", "Rất", "很漂亮 (Rất đẹp)", "很好|hěn hǎo|Rất tốt", "很多|hěn duō|Rất nhiều", "很高|hěn gāo|Rất cao"],
+            "漂": ["piào", "Phiêu (Đẹp)", "很漂亮 (Rất đẹp)", "漂亮|piào liàng|Xinh đẹp", "漂浮|piāo fú|Trôi nổi", "漂流|piāo liú|Trôi dạt"],
+            "亮": ["liàng", "Lượng (Sáng)", "很漂亮 (Rất đẹp)", "明亮|míng liàng|Sáng sủa", "月亮|yuè liàng|Mặt trăng", "天亮|tiān liàng|Trời sáng"],
+            "美": ["měi", "Mỹ (Đẹp)", "很美 (Rất đẹp)", "美國|měi guó|Nước Mỹ", "美味|měi wèi|Thơm ngon", "美女|měi nǚ|Mỹ nữ"],
+            "都": ["dōu", "Đều", "這照片都很好看 (Các ảnh này đều đẹp)", "首都|shǒu dū|Thủ đô", "都市|dū shì|Đô thị", "全都|quán dōu|Tất cả đều"],
+            "來": ["lái", "Lai (Đến)", "明天早上來 (Sáng mai đến)", "回來|huí lái|Trở về", "起來|qǐ lái|Đứng lên", "未來|wèi lái|Tương lai"],
+            "家": ["jiā", "Gia (Nhà)", "這是我家 (Đây là nhà tôi)", "家庭|jiā tíng|Gia đình", "國家|guó jiā|Quốc gia", "大家|dà jiā|Mọi người"],
+            "歡": ["huān", "Hoan (Vui)", "歡迎！ (Hoan nghênh!)", "喜歡|xǐ huān|Thích", "歡樂|huān lè|Vui vẻ", "狂歡|kuáng huān|Cuồng hoan"],
+            "迎": ["yíng", "Nghênh (Đón)", "歡迎！ (Hoan nghênh!)", "迎接|yíng jiē|Nghênh tiếp", "迎面|yíng miàn|Trước mặt", "迎風|yíng fēng|Đón gió"],
+            "請": ["qǐng", "Thỉnh (Mời)", "請進 (Mời vào)", "請問|qǐng wèn|Xin hỏi", "請客|qǐng kè|Mời khách", "申請|shēn qǐng|Xin phép"],
+            "進": ["jìn", "Tiến (Vào)", "請進 (Mời vào)", "進來|jìn lái|Vào đây", "進步|jìn bù|Tiến bộ", "進入|jìn rù|Đi vào"],
+            "坐": ["zuò", "Tọa (Ngồi)", "請坐 (Mời ngồi)", "坐下|zuò xià|Ngồi xuống", "坐車|zuò chē|Ngồi xe", "請坐|qǐng zuò|Mời ngồi"],
+            "謝": ["xiè", "Tạ (Cảm ơn)", "謝謝 (Cảm ơn)", "感謝|gǎn xiè|Cảm tạ", "道謝|dào xiè|Nói cảm ơn", "凋謝|diāo xiè|Khô héo"],
+            "你": ["nǐ", "Nhĩ (Bạn)", "你們好 (Chào các bạn)", "你好|nǐ hǎo|Xin chào", "你們|nǐ men|Các bạn", "你的|nǐ de|Của bạn"],
+            "們": ["men", "Môn (Hậu tố số nhiều)", "你們好 (Chào các bạn)", "我們|wǒ men|Chúng tôi", "他們|tā men|Họ", "人們|rén men|Mọi người"],
+            "好": ["hǎo", "Hảo (Tốt)", "很好看 (Rất đẹp)", "好像|hǎo xiàng|Hình như", "好吃|hǎo chī|Ngon", "好人|hǎo rén|Người tốt"],
+            "看": ["kàn", "Khán (Nhìn)", "很好看 (Rất đẹp)", "看見|kàn jiàn|Nhìn thấy", "看書|kàn shū|Đọc sách", "好看|hǎo kàn|Đẹp, hay"],
+            "問": ["wèn", "Vấn (Hỏi)", "請問 (Xin hỏi)", "問題|wèn tí|Vấn đề", "訪問|fǎng wèn|Thăm hỏi", "學問|xué wèn|Học vấn"],
+            "照": ["zhào", "Chiếu", "照片 (Bức ảnh)", "照顧|zhào gù|Chăm sóc", "護照|hù zhào|Hộ chiếu", "照相|zhào xiàng|Chụp ảnh"],
+            "片": ["piàn", "Phiến (Tấm/Mảnh)", "照片 (Bức ảnh)", "名片|míng piàn|Danh thiếp", "卡片|kǎ piàn|Tấm thiệp", "片面|piàn miàn|Phiến diện"],
+            "嗎": ["ma", "Ma (Không)", "是張小姐的嗎？ (Phải của cô Trương không?)", "好嗎|hǎo ma|Được không", "對嗎|duì ma|Đúng không", "去嗎|qù ma|Đi không"],
+            "我": ["wǒ", "Ngã (Tôi)", "我是美國人 (Tôi là người Mỹ)", "我們|wǒ men|Chúng ta", "自我|zì wǒ|Tự bản thân", "我的|wǒ de|Của tôi"],
+            "人": ["rén", "Nhân (Người)", "有很多人 (Có rất nhiều người)", "男人|nán rén|Đàn ông", "女人|nǚ rén|Phụ nữ", "別人|bié rén|Người khác"],
+            "誰": ["shéi", "Thùy (Ai)", "請問這是誰 (Xin hỏi đây là ai)", "是誰|shì shéi|Là ai", "誰的|shéi de|Của ai", "誰知道|shéi zhī dào|Ai biết"],
+            "呢": ["ne", "Ni (Nhỉ - Trợ từ)", "馬先生呢？ (Thế còn ông Mã?)", "你呢|nǐ ne|Còn bạn", "人呢|rén ne|Người đâu rồi", "怎麼呢|zěn me ne|Làm sao nhỉ"],
+            "爸": ["bà", "Ba", "爸爸 (Bố)", "爸爸|bà ba|Bố", "老爸|lǎo bà|Ông già (gọi thân mật)", "爸媽|bà mā|Bố mẹ"],
+            "媽": ["mā", "Má (Mẹ)", "媽媽 (Mẹ)", "媽媽|mā ma|Mẹ", "大媽|dà mā|Bác gái", "老媽|lǎo mā|Bà già (gọi thân mật)"],
+            "姐": ["jiě", "Tỷ (Chị)", "姐姐 (Chị gái)", "姐姐|jiě jie|Chị gái", "小姐|xiǎo jiě|Cô gái", "姐妹|jiě mèi|Chị em"],
+            "妹": ["mèi", "Muội (Em gái)", "妹妹 (Em gái)", "妹妹|mèi mei|Em gái", "姐妹|jiě mèi|Chị em", "表妹|biǎo mèi|Em họ"],
+            "六": ["liù", "Lục (Sáu)", "六人 (Sáu người)", "星期六|xīng qī liù|Thứ bảy", "六月|liù yuè|Tháng sáu", "六十|liù shí|Sáu mươi"],
+            "先": ["xiān", "Tiên (Trước)", "馬先生 (Ông Mã)", "先生|xiān shēng|Ngài, anh", "首先|shǒu xiān|Đầu tiên", "先後|xiān hòu|Trước sau"],
+            "生": ["shēng", "Sinh", "馬先生 (Ông Mã)", "生活|shēng huó|Cuộc sống", "生日|shēng rì|Sinh nhật", "學生|xué shēng|Học sinh"],
+            "哪": ["nǎ", "Nào", "哪國人 (Người nước nào)", "哪裡|nǎ lǐ|Ở đâu", "哪個|nǎ ge|Cái nào", "哪怕|nǎ pà|Cho dù"],
+            "國": ["guó", "Quốc", "哪國人 (Người nước nào)", "國家|guó jiā|Quốc gia", "國外|guó wài|Nước ngoài", "國際|guó jì|Quốc tế"],
+            "姓": ["xìng", "Tính (Họ)", "您姓什麼 (Ngài họ gì)", "姓名|xìng míng|Họ tên", "百姓|bǎi xìng|Bách tính", "貴姓|guì xìng|Quý danh"],
+            "什": ["shén", "Thập (Gì)", "什麼 (Cái gì)", "什麼|shén me|Cái gì", "為什麼|wèi shén me|Tại sao", "憑什麼|píng shén me|Dựa vào cái gì"],
+            "麼": ["me", "Ma (Gì)", "什麼 (Cái gì)", "什麼|shén me|Cái gì", "怎麼|zěn me|Thế nào", "這麼|zhè me|Như thế này"],
+            "叫": ["jiào", "Khiếu (Gọi)", "名字叫張怡君 (Tên gọi Trương Di Quân)", "叫聲|jiào shēng|Tiếng kêu", "大叫|dà jiào|Kêu to", "叫做|jiào zuò|Gọi là"],
+            "日": ["rì", "Nhật", "日本人 (Người Nhật Bản)", "日本|rì běn|Nhật Bản", "日記|rì jì|Nhật ký", "節日|jié rì|Ngày lễ"],
+            "本": ["běn", "Bản", "日本人 (Người Nhật Bản)", "書本|shū běn|Sách", "本來|běn lái|Vốn dĩ", "根本|gēn běn|Căn bản"],
+            "台": ["tái", "Đài", "台灣人 (Người Đài Loan)", "台灣|tái wān|Đài Loan", "台北|tái běi|Đài Bắc", "上台|shàng tái|Lên đài"],
+            "灣": ["wān", "Loan", "台灣人 (Người Đài Loan)", "海灣|hǎi wān|Vịnh biển", "台灣|tái wān|Đài Loan", "轉灣|zhuǎn wān|Rẽ"],
+            "要": ["yào", "Yếu (Muốn/Phải)", "您要喝茶嗎？ (Ngài muốn uống trà không?)", "需要|xū yào|Cần thiết", "要求|yāo qiú|Yêu cầu", "重要|zhòng yào|Quan trọng"],
+            "喝": ["hē", "Hát (Uống)", "要喝什麼 (Muốn uống gì)", "喝水|hē shuǐ|Uống nước", "好喝|hǎo hē|Ngon (đồ uống)", "喝醉|hē zuì|Uống say"],
+            "茶": ["chá", "Trà", "要茶 (Muốn dùng trà)", "奶茶|nǎi chá|Trà sữa", "茶葉|chá yè|Lá trà", "喝茶|hē chá|Uống trà"],
+            "咖": ["kā", "Cà", "咖啡 (Cà phê)", "咖啡|kā fēi|Cà phê", "咖哩|gā lǐ|Cà ri", "咖啡館|kā fēi guǎn|Quán cafe"],
+            "啡": ["fēi", "Phê", "咖啡 (Cà phê)", "咖啡|kā fēi|Cà phê", "咖啡色|kā fēi sè|Màu nâu cafe", "黑咖啡|hēi kā fēi|Cafe đen"],
+            "喜": ["xǐ", "Hỷ (Thích/Vui)", "我喜歡 (Tôi thích)", "喜歡|xǐ huān|Thích", "喜劇|xǐ jù|Hài kịch", "恭喜|gōng xǐ|Chúc mừng"],
+            "烏": ["wū", "Ô (Đen)", "烏龍茶 (Trà Ô long)", "烏黑|wū hēi|Đen nhánh", "烏鴉|wū yā|Con quạ", "烏雲|wū yún|Mây đen"],
+            "龍": ["lóng", "Long (Rồng)", "烏龍茶 (Trà Ô long)", "恐龍|kǒng lóng|Khủng long", "龍頭|lóng tóu|Vòi nước", "神龍|shén lóng|Thần long"],
+            "對": ["duì", "Đối (Đúng)", "對不起 (Xin lỗi)", "對不起|duì bù qǐ|Xin lỗi", "對面|duì miàn|Đối diện", "對話|duì huà|Đối thoại"],
+            "不": ["bù", "Bất (Không)", "對不起 (Xin lỗi)", "不是|bú shì|Không phải", "不行|bù xíng|Không được", "不錯|bú cuò|Không tồi"],
+            "起": ["qǐ", "Khởi (Dậy/Lên)", "對不起 (Xin lỗi)", "起來|qǐ lái|Đứng lên", "起床|qǐ chuáng|Ngủ dậy", "起飛|qǐ fēi|Cất cánh"],
+            "去": ["qù", "Khứ (Đi)", "我去接伯母 (Tôi đi đón bác gái)", "去年|qù nián|Năm ngoái", "過去|guò qù|Quá khứ", "回去|huí qù|Trở về"],
+            "接": ["jiē", "Tiếp (Đón/Nhận)", "去接家人 (Đi đón người nhà)", "接受|jiē shòu|Chấp nhận", "接著|jiē zhe|Tiếp theo", "迎接|yíng jiē|Đón tiếp"],
+            "老": ["lǎo", "Lão (Già)", "李老師 (Thầy giáo Lý)", "老師|lǎo shī|Giáo viên", "老人|lǎo rén|Người già", "老婆|lǎo pó|Vợ"],
+            "師": ["shī", "Sư (Thầy)", "李老師 (Thầy giáo Lý)", "老師|lǎo shī|Giáo viên", "律師|lǜ shī|Luật sư", "醫師|yī shī|Bác sĩ"],
+            "三": ["sān", "Tam (Ba)", "三十五塊 (35 tệ)", "三個|sān ge|Ba cái", "星期三|xīng qī sān|Thứ tư", "三明治|sān míng zhì|Sandwich"],
+            "萬": ["wàn", "Vạn (Mười nghìn)", "八十萬 (80 vạn/800 ngàn)", "一萬|yí wàn|Mười nghìn", "千萬|qiān wàn|Nhất thiết", "萬歲|wàn suì|Vạn tuế"],
+            "塊": ["kuài", "Khối (Tệ/Cục)", "四十五塊 (45 tệ)", "一塊|yí kuài|Một tệ/cục", "冰塊|bīng kuài|Cục đá", "方塊|fāng kuài|Khối vuông"],
+            "五": ["wǔ", "Ngũ (Năm)", "四十五塊 (45 tệ)", "五個|wǔ ge|Năm cái", "星期五|xīng qī wǔ|Thứ sáu", "五月|wǔ yuè|Tháng năm"],
+            "八": ["bā", "Bát (Tám)", "八十萬 (80 vạn/800 ngàn)", "八個|bā ge|Tám cái", "星期八|xīng qī bā|Ngày nghỉ", "八月|bā yuè|Tháng tám"],
+            "多": ["duō", "Đa (Nhiều)", "很多人 (Rất nhiều người)", "多少|duō shǎo|Bao nhiêu", "很多|hěn duō|Rất nhiều", "多數|duō shù|Đa số"],
+            "她": ["tā", "Tha (Cô ấy)", "她名字叫 (Tên cô ấy gọi là)", "她們|tā men|Các cô ấy", "她的|tā de|Của cô ấy", "她自己|tā zì jǐ|Chính cô ấy"],
+            "名": ["míng", "Danh (Tên)", "名字 (Tên gọi)", "名字|míng zì|Tên", "有名|yǒu míng|Nổi tiếng", "名片|míng piàn|Danh thiếp"],
+            "臺": ["tái", "Đài", "臺北 (Đài Bắc)", "臺北|tái běi|Đài Bắc", "臺灣|tái wān|Đài Loan", "舞臺|wǔ tái|Sân khấu"],
+            "北": ["běi", "Bắc", "臺北 (Đài Bắc)", "北京|běi jīng|Bắc Kinh", "北方|běi fāng|Phương Bắc", "南北|nán běi|Nam Bắc"],
+            "週": ["zhōu", "Tuần", "週末的臺北聚會 (Tụ tập ở Đài Bắc cuối tuần)", "週末|zhōu mò|Cuối tuần", "週年|zhōu nián|Kỷ niệm năm", "每週|měi zhōu|Mỗi tuần"],
+            "末": ["mò", "Cuối, ngọn", "週末 (Cuối tuần)", "週末|zhōu mò|Cuối tuần", "期末|qī mò|Cuối kỳ", "末日|mò rì|Ngày tận thế"],
+            "聚": ["jù", "Tụ tập", "臺北聚會 (Buổi tụ tập ở Đài Bắc)", "聚會|jù huì|Tụ tập, liên hoan", "聚餐|jù cān|Ăn uống tụ tập", "團聚|tuán jù|Đoàn tụ"],
+            "會": ["huì", "Hội, biết", "臺北聚會 (Buổi tụ tập ở Đài Bắc)", "聚會|jù huì|Tụ tập", "開會|kāi huì|Họp", "會說|huì shuō|Biết nói"],
+            "場": ["chǎng", "Cảnh, sân", "場景一 (Cảnh 1)", "場景|chǎng jǐng|Bối cảnh", "操場|cāo chǎng|Sân vận động", "廣場|guǎng chǎng|Quảng trường"],
+            "景": ["jǐng", "Cảnh", "場景一 (Cảnh 1)", "風景|fēng jǐng|Phong cảnh", "場景|chǎng jǐng|Bối cảnh", "夜景|yè jǐng|Cảnh đêm"],
+            "今": ["jīn", "Nay", "今天天氣很好 (Hôm nay thời tiết đẹp)", "今天|jīn tiān|Hôm nay", "今年|jīn nián|Năm nay", "今晚|jīn wǎn|Tối nay"],
+            "天": ["tiān", "Trời, ngày", "今天天氣很好 (Hôm nay thời tiết đẹp)", "天氣|tiān qì|Thời tiết", "每天|měi tiān|Mỗi ngày", "天空|tiān kōng|Bầu trời"],
+            "氣": ["qì", "Khí", "今天天氣很好 (Hôm nay thời tiết đẹp)", "天氣|tiān qì|Thời tiết", "客氣|kè qì|Khách sáo", "生氣|shēng qì|Tức giận"],
+            "茹": ["rú", "Như", "白茹玉 (Bạch Như Ngọc)", "茹素|rú sù|Ăn chay", "茹玉|rú yù|Như Ngọc", "含辛茹苦|hán xīn rú kǔ|Ngậm đắng nuốt cay"],
+            "玉": ["yù", "Ngọc", "白茹玉 (Bạch Như Ngọc)", "玉佩|yù pèi|Ngọc bội", "玉米|yù mǐ|Ngô/Bắp", "寶玉|bǎo yù|Bảo ngọc"],
+            "玩": ["wán", "Chơi", "臺北很好玩 (Đài Bắc rất vui)", "好玩|hǎo wán|Vui, hay", "玩具|wán jù|Đồ chơi", "開玩笑|kāi wán xiào|Nói đùa"],
+            "早": ["zǎo", "Sớm", "明天早上來 (Sáng mai đến)", "早上|zǎo shàng|Buổi sáng", "早安|zǎo ān|Chào buổi sáng", "提早|tí zǎo|Làm sớm"],
+            "上": ["shàng", "Trên, lên", "明天早上來 (Sáng mai đến)", "早上|zǎo shàng|Buổi sáng", "上班|shàng bān|Đi làm", "上課|shàng kè|Vào học"],
+            "田": ["tián", "Điền (Họ)", "田中誠一 (Tanaka Seiichi)", "水田|shuǐ tián|Ruộng nước", "種田|zhòng tián|Trồng trọt", "田地|tián dì|Đất đai"],
+            "中": ["zhōng", "Trung", "田中誠一 (Tanaka)", "中文|zhōng wén|Tiếng Trung", "中午|zhōng wǔ|Buổi trưa", "中間|zhōng jiān|Ở giữa"],
+            "誠": ["chéng", "Thành", "田中誠一 (Tanaka Seiichi)", "誠實|chéng shí|Thành thật", "真誠|zhēn chéng|Chân thành", "誠心|chéng xīn|Thành tâm"],
+            "也": ["yě", "Cũng", "我也喝咖啡 (Tôi cũng uống cafe)", "也是|yě shì|Cũng là", "也許|yě xǔ|Có lẽ", "也好|yě hǎo|Cũng tốt"],
+            "想": ["xiǎng", "Muốn, nghĩ", "你們想喝神麼？ (Các bạn muốn uống gì?)", "想念|xiǎng niàn|Nhớ nhung", "想法|xiǎng fǎ|Suy nghĩ", "想要|xiǎng yào|Mong muốn"],
+            "還": ["hái", "Còn, hay là", "還是喝咖啡？ (Hay là uống cafe?)", "還是|hái shì|Hay là", "還有|hái yǒu|Vẫn còn", "還沒|hái méi|Vẫn chưa"],
+            "客": ["kè", "Khách", "不客氣 (Đừng khách sáo)", "客氣|kè qì|Khách sáo", "客人|kè rén|Khách", "請客|qǐng kè|Mời khách"],
+            "兩": ["liǎng", "Hai", "兩部中文書 (Hai cuốn sách tiếng Trung)", "兩個|liǎng ge|Hai cái", "兩天|liǎng tiān|Hai ngày", "兩次|liǎng cì|Hai lần"],
+            "書": ["shū", "Sách", "兩部中文書 (Hai cuốn sách tiếng Trung)", "看書|kàn shū|Đọc sách", "圖書館|tú shū guǎn|Thư viện", "書法|shū fǎ|Thư pháp"],
+            "哥": ["gē", "Anh trai", "有爸爸、哥哥... (Có bố, anh trai...)", "哥哥|gē ge|Anh trai", "大哥|dà gē|Đại ca", "表哥|biǎo gē|Anh họ"],
+            "幾": ["jǐ", "Mấy, vài", "你有幾兄弟姐妹？ (Bạn có mấy anh chị em?)", "幾個|jǐ ge|Mấy cái", "幾天|jǐ tiān|Mấy ngày", "幾歲|jǐ suì|Mấy tuổi"],
+            "兄": ["xiōng", "Huynh (Anh)", "兄弟姐妹 (Anh chị em)", "兄弟|xiōng dì|Anh em", "兄長|xiōng zhǎng|Huynh trưởng", "兄弟姐妹|xiōng dì jiě mèi|Anh chị em"],
+            "弟": ["dì", "Đệ (Em trai)", "兄弟姐妹 (Anh chị em)", "弟弟|dì di|Em trai", "兄弟|xiōng dì|Anh em", "徒弟|tú dì|Đồ đệ"],
+            "伯": ["bó", "Bá (Bác)", "伯母好嗎？ (Bác gái khỏe không?)", "伯母|bó mǔ|Bác gái", "伯父|bó fù|Bác trai", "大伯|dà bó|Bác cả"],
+            "母": ["mǔ", "Mẫu (Mẹ)", "伯母好嗎？ (Bác gái khỏe không?)", "母親|mǔ qīn|Mẹ", "伯母|bó mǔ|Bác gái", "母語|mǔ yǔ|Tiếng mẹ đẻ"],
+            "可": ["kě", "Khả (Có thể)", "可以嗎？ (Có thể không?)", "可以|kě yǐ|Có thể", "可愛|kě ài|Đáng yêu", "可是|kě shì|Nhưng mà"],
+            "以": ["yǐ", "Dĩ", "可以嗎？ (Có thể không?)", "可以|kě yǐ|Có thể", "所以|suǒ yǐ|Cho nên", "以為|yǐ wéi|Cho rằng"],
+            "新": ["xīn", "Tân (Mới)", "新朋友 (Bạn mới)", "新年|xīn nián|Năm mới", "新聞|xīn wén|Tin tức", "新鮮|xīn xiān|Tươi mới"],
+            "朋": ["péng", "Bằng (Bạn)", "新朋友 (Bạn mới)", "朋友|péng yǒu|Bạn bè", "男朋友|nán péng yǒu|Bạn trai", "女朋友|nǚ péng yǒu|Bạn gái"],
+            "友": ["yǒu", "Hữu (Bạn)", "新朋友 (Bạn mới)", "朋友|péng yǒu|Bạn bè", "友好|yǒu hǎo|Hữu nghị", "網友|wǎng yǒu|Bạn trên mạng"],
+            "籍": ["jí", "Tịch", "國籍 (Quốc tịch)", "國籍|guó jí|Quốc tịch", "書籍|shū jí|Sách vở", "戶籍|hù jí|Hộ khẩu"],
+            "常": ["cháng", "Thường", "週末你們常做什麼？ (Cuối tuần thường làm gì?)", "常常|cháng cháng|Thường xuyên", "平常|píng cháng|Bình thường", "非常|fēi cháng|Vô cùng"],
+            "做": ["zuò", "Làm", "週末你們常做什麼？ (Cuối tuần thường làm gì?)", "做事|zuò shì|Làm việc", "做飯|zuò fàn|Nấu cơm", "叫做|jiào zuò|Gọi là"],
+            "運": ["yùn", "Vận", "做運動嗎？ (Có tập thể dục không?)", "運動|yùn dòng|Thể thao", "運氣|yùn qì|Vận khí, may mắn", "運輸|yùn shū|Vận chuyển"],
+            "動": ["dòng", "Động", "做運動嗎？ (Có tập thể dục không?)", "運動|yùn dòng|Thể thao", "動物|dòng wù|Động vật", "感動|gǎn dòng|Cảm động"],
+            "球": ["qiú", "Cầu (Bóng)", "我喜歡打球 (Tôi thích chơi bóng)", "打球|dǎ qiú|Đánh bóng", "足球|zú qiú|Bóng đá", "地球|dì qiú|Trái đất"],
+            "網": ["wǎng", "Võng (Lưới)", "我喜歡打網球 (Tôi thích đánh tennis)", "網球|wǎng qiú|Tennis", "上網|shàng wǎng|Lên mạng", "網路|wǎng lù|Mạng internet"],
+            "棒": ["bàng", "Bổng (Gậy)", "打棒球 (Đánh bóng chày)", "棒球|bàng qiú|Bóng chày", "很棒|hěn bàng|Rất tuyệt", "冰棒|bīng bàng|Kem que"],
+            "籃": ["lán", "Lam (Rổ)", "喜歡打籃球 (Thích chơi bóng rổ)", "籃球|lán qiú|Bóng rổ", "花籃|huā lán|Giỏ hoa", "搖籃|yáo lán|Nôi"],
+            "游": ["yóu", "Du (Bơi)", "我喜歡游泳 (Tôi thích bơi lội)", "游泳|yóu yǒng|Bơi lội", "遊戲|yóu xì|Trò chơi", "旅遊|lǚ yóu|Du lịch"],
+            "泳": ["yǒng", "Vịnh (Bơi)", "我喜歡游泳 (Tôi thích bơi lội)", "游泳|yóu yǒng|Bơi lội", "泳衣|yǒng yī|Đồ bơi", "泳池|yǒng chí|Hồ bơi"],
+            "踢": ["tī", "Thích (Đá)", "喜歡踢足球 (Thích đá bóng)", "踢足球|tī zú qiú|Đá bóng", "踢開|tī kāi|Đá văng", "踢毽子|tī jiàn zi|Đá cầu"],
+            "足": ["zú", "Túc (Chân, đủ)", "喜歡踢足球 (Thích đá bóng)", "足球|zú qiú|Bóng đá", "足夠|zú gòu|Đủ", "滿足|mǎn zú|Thỏa mãn"],
+            "覺": ["jué", "Giác", "我覺得踢足球很好玩 (Tôi thấy đá bóng rất vui)", "覺得|jué de|Cảm thấy", "感覺|gǎn jué|Cảm giác", "睡覺|shuì jiào|Ngủ"],
+            "得": ["de / dé", "Đắc (Trợ từ)", "我覺得... (Tôi cảm thấy...)", "覺得|jué de|Cảm thấy", "得到|dé dào|Nhận được", "得意|dé yì|Đắc ý"],
+            "聽": ["tīng", "Thính (Nghe)", "喜歡聽音樂 (Thích nghe nhạc)", "聽音樂|tīng yīn yuè|Nghe nhạc", "聽說|tīng shuō|Nghe nói", "好聽|hǎo tīng|Hay"],
+            "音": ["yīn", "Âm", "喜歡聽音樂 (Thích nghe nhạc)", "音樂|yīn yuè|Âm nhạc", "發音|fā yīn|Phát âm", "聲音|shēng yīn|Âm thanh"],
+            "樂": ["yuè / lè", "Nhạc / Vui", "喜歡聽音樂 (Thích nghe nhạc)", "音樂|yīn yuè|Âm nhạc", "快樂|kuài lè|Vui vẻ", "樂觀|lè guān|Lạc quan"],
+            "學": ["xué", "Học", "我也學中文 (Tôi cũng học tiếng Trung)", "學習|xué xí|Học tập", "學校|xué xiào|Trường học", "學生|xué shēng|Học sinh"],
+            "晚": ["wǎn", "Vãn (Tối)", "今天晚上 (Tối hôm nay)", "晚上|wǎn shàng|Buổi tối", "晚安|wǎn ān|Chúc ngủ ngon", "晚飯|wǎn fàn|Bữa tối"],
+            "電": ["diàn", "Điện", "想去看電影 (Muốn đi xem phim)", "電影|diàn yǐng|Phim ảnh", "電視|diàn shì|Tivi", "電話|diàn huà|Điện thoại"],
+            "影": ["yǐng", "Ảnh (Phim)", "想去看電影 (Muốn đi xem phim)", "電影|diàn yǐng|Phim ảnh", "影響|yǐng xiǎng|Ảnh hưởng", "影子|yǐng zi|Cái bóng"],
+            "怎": ["zěn", "Chẩm (Thế nào)", "怎麼演啊？ (Diễn thế nào vậy?)", "怎麼|zěn me|Thế nào", "怎麼樣|zěn me yàng|Ra sao", "怎麼辦|zěn me bàn|Làm sao đây"],
+            "演": ["yǎn", "Diễn", "怎麼演啊？ (Diễn thế nào vậy?)", "表演|biǎo yǎn|Biểu diễn", "演戲|yǎn xì|Đóng kịch", "演員|yǎn yuán|Diễn viên"],
+            "啊": ["a", "A (Trợ từ)", "怎麼演啊？ (Diễn thế nào vậy?)", "好啊|hǎo a|Được nha", "對啊|duì a|Đúng rồi", "走啊|zǒu a|Đi thôi"],
+            "吧": ["ba", "Ba (Nhé, đi)", "我們照相吧！ (Chúng ta chụp ảnh nhé!)", "走吧|zǒu ba|Đi thôi", "好吧|hǎo ba|Được thôi", "對吧|duì ba|Đúng chứ"],
+            "吃": ["chī", "Cật (Ăn)", "先吃晚飯 (Ăn tối trước)", "吃飯|chī fàn|Ăn cơm", "好吃|hǎo chī|Ngon", "吃飽|chī bǎo|Ăn no"],
+            "飯": ["fàn", "Phạn (Cơm)", "先吃晚飯 (Ăn tối trước)", "晚飯|wǎn fàn|Bữa tối", "吃飯|chī fàn|Ăn cơm", "早飯|zǎo fàn|Bữa sáng"],
+            "越": ["yuè", "Việt", "越南菜 (Món Việt Nam)", "越南|yuè nán|Việt Nam", "越來越|yuè lái yuè|Ngày càng", "超越|chāo yuè|Vượt qua"],
+            "南": ["nán", "Nam", "越南菜 (Món Việt Nam)", "越南|yuè nán|Việt Nam", "南方|nán fāng|Phương Nam", "南北|nán běi|Nam Bắc"],
+            "菜": ["cài", "Thái (Rau, món)", "越南菜 (Món Việt Nam)", "做菜|zuò cài|Nấu ăn", "蔬菜|shū cài|Rau củ", "點菜|diǎn cài|Gọi món"],
+            "數": ["shù / shǔ", "Số / Đếm", "數字練習 (Luyện tập chữ số)", "數字|shù zì|Chữ số", "數學|shù xué|Toán học", "多數|duō shù|Đa số"],
+            "字": ["zì", "Tự (Chữ)", "數字練習 (Luyện tập chữ số)", "寫字|xiě zì|Viết chữ", "漢字|hàn zì|Chữ Hán", "名字|míng zì|Tên"],
+            "練": ["liàn", "Luyện", "數字練習 (Luyện tập chữ số)", "練習|liàn xí|Luyện tập", "教練|jiào liàn|Huấn luyện viên", "熟練|shú liàn|Thành thạo"],
+            "習": ["xí", "Tập", "數字練習 (Luyện tập chữ số)", "練習|liàn xí|Luyện tập", "學習|xué xí|Học tập", "習慣|xí guàn|Thói quen"],
+            "結": ["jié", "Kết", "結尾 (Phần cuối)", "結婚|jié hūn|Kết hôn", "結果|jié guǒ|Kết quả", "結束|jié shù|Kết thúc"],
+            "尾": ["wěi", "Vĩ (Đuôi)", "結尾 (Phần cuối)", "結尾|jié wěi|Phần cuối", "尾巴|wěi ba|Cái đuôi", "從頭到尾|cóng tóu dào wěi|Từ đầu đến cuối"],
+            "九": ["jiǔ", "Cửu (Chín)", "九十塊 (Chín mươi tệ)", "九個|jiǔ ge|Chín cái", "九月|jiǔ yuè|Tháng chín", "十九|shí jiǔ|Mười chín"],
+            "十": ["shí", "Thập (Mười)", "九十塊 (Chín mươi tệ)", "十分|shí fēn|Mười phần", "十月|shí yuè|Tháng mười", "十足|shí zú|Đầy đủ"],
+            "四": ["sì", "Tứ (Bốn)", "四十五塊 (Bốn mươi lăm tệ)", "四個|sì ge|Bốn cái", "星期四|xīng qī sì|Thứ năm", "四月|sì yuè|Tháng tư"],
+            "零": ["líng", "Linh (Không)", "八十萬零三十五塊 (800,035 tệ)", "零食|líng shí|Đồ ăn vặt", "零錢|líng qián|Tiền lẻ", "零度|líng dù|Không độ"],
+            "七": ["qī", "Thất (Bảy)", "七、八、九 (7, 8, 9)", "七個|qī ge|Bảy cái", "星期天|xīng qī tiān|Chủ nhật", "七月|qī yuè|Tháng bảy"],
+            "神": ["shén", "Thần", "喝神麼？ (Uống gì?) (Cách viết vui/sai của 什麼)", "神仙|shén xiān|Thần tiên", "精神|jīng shén|Tinh thần", "神秘|shén mì|Thần bí"],
+            "白": ["bái", "Bạch (Trắng/Họ)", "白茹玉 (Bạch Như Ngọc)", "白天|bái tiān|Ban ngày", "明白|míng bái|Hiểu rõ", "空白|kòng bái|Trống không"]
+        };
 
-        document.getElementById('cat-mascot').style.backgroundImage = `url('${catEmotions.normal}')`;
-        document.getElementById('word-img').src = q.img;
-        document.getElementById('hanzi-text').innerText = q.hanzi;
-        document.getElementById('pinyin-text').innerText = q.missingPart;
-        document.getElementById('feedback-text').innerText = "Nghe và chọn đáp án chính xác!";
-        document.getElementById('feedback-text').style.background = "transparent";
-        document.getElementById('next-btn').style.display = "none";
+        const dictionary = {};
+        // Mã bảo vệ tuyệt đối không gây lỗi dù dữ liệu có thiếu hay thừa
+        for (const [char, data] of Object.entries(rawDict)) {
+            let relWords = [];
+            if(data[3]) relWords.push({ word: data[3].split('|')[0], pinyin: data[3].split('|')[1], meaning: data[3].split('|')[2] });
+            if(data[4]) relWords.push({ word: data[4].split('|')[0], pinyin: data[4].split('|')[1], meaning: data[4].split('|')[2] });
+            if(data[5]) relWords.push({ word: data[5].split('|')[0], pinyin: data[5].split('|')[1], meaning: data[5].split('|')[2] });
+            
+            dictionary[char] = { pinyin: data[0], meaning: data[1], usage: data[2], related: relWords };
+        }
 
-        const optContainer = document.getElementById('options-container');
-        optContainer.innerHTML = '';
+        function getCharInfo(char) {
+            if (dictionary[char]) return dictionary[char];
+            return { pinyin: '...', meaning: 'Chưa có thông tin nghĩa cho từ này.', usage: 'Từ này cần được cập nhật thêm vào kho dữ liệu.', related: [ { word: char, pinyin: '', meaning: 'Tra cứu thêm' } ] };
+        }
 
-        q.options.forEach((opt, idx) => {
-            let btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => handleAnswer(idx, btn);
-            optContainer.appendChild(btn);
-        });
+        window.storyTextOnly = "";
+        
+        function renderText() {
+            let html = '';
+            const lines = rawText.split('\n');
+            window.storyTextOnly = "";
+            
+            for (let line of lines) {
+                line = line.trim();
+                if(!line) { html += '<br>'; continue; }
+                
+                if (line.startsWith('【') && line.endsWith('】')) {
+                    html += '<div class="scene-marker">';
+                    for(let char of line) {
+                        if (/[\u4E00-\u9FA5]/.test(char)) html += `<span class="hanzi-char" onclick="openModal('${char}')">${char}</span>`;
+                        else html += char;
+                    }
+                    html += '</div>';
+                    continue;
+                }
 
-        setTimeout(playCurrentWord, 500);
-    }
+                let inBracket = false;
+                let beforeColon = true;
+                if(!line.includes('：')) beforeColon = false;
+                
+                let lineHtml = '';
+                for(let i=0; i<line.length; i++){
+                    let char = line[i];
+                    if (char === '【' || char === '(' || char === '（') inBracket = true;
+                    
+                    let isSpoken = !inBracket && !beforeColon;
+                    if(char === '：' && beforeColon) {
+                        isSpoken = false; 
+                        beforeColon = false; 
+                    }
+                    
+                    let isHanzi = /[\u4E00-\u9FA5]/.test(char);
+                    let clickEvt = isHanzi ? `onclick="openModal('${char}')"` : "";
+                    let classes = isHanzi ? "hanzi-char" : "";
+                    
+                    if (isSpoken) {
+                        lineHtml += `<span class="${classes}" data-idx="${window.storyTextOnly.length}" ${clickEvt}>${char}</span>`;
+                        window.storyTextOnly += char;
+                    } else {
+                        if (inBracket || char === '：' || beforeColon) {
+                            lineHtml += `<span class="speaker-name ${classes}" ${clickEvt}>${char}</span>`;
+                        } else {
+                            lineHtml += `<span class="${classes}" ${clickEvt}>${char}</span>`;
+                        }
+                    }
+                    
+                    if (char === '】' || char === ')' || char === '）') inBracket = false;
+                }
+                html += `<div>${lineHtml}</div>`;
+                
+                if(window.storyTextOnly.length > 0 && !window.storyTextOnly.endsWith(' ')) {
+                    window.storyTextOnly += ' '; 
+                }
+            }
+            document.getElementById('text-container').innerHTML = html;
+        }
 
-    function playAudio(text) {
-        return new Promise(resolve => {
+        let writer; let currentChar = '';
+        function openModal(char) {
+            currentChar = char;
+            const info = getCharInfo(char);
+            document.getElementById('modal-char').innerText = char;
+            document.getElementById('modal-pinyin').innerText = info.pinyin;
+            document.getElementById('modal-meaning').innerText = info.meaning;
+            document.getElementById('modal-usage').innerText = info.usage;
+
+            let treeHtml = `<div class="tree-root">${char}</div><div class="tree-branches">`;
+            info.related.forEach(item => {
+                treeHtml += `<div class="tree-branch"><div class="branch-header"><span class="branch-word">${item.word}</span><button class="branch-btn-audio" onclick="playWord('${item.word}')" title="Nghe từ này">🔊</button></div><span class="branch-pinyin">${item.pinyin}</span><span class="branch-meaning">${item.meaning}</span></div>`;
+            });
+            treeHtml += `</div>`;
+            document.getElementById('tree-container').innerHTML = treeHtml;
+
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('character-target').innerHTML = '';
+            
+            writer = HanziWriter.create('character-target', char, { width: 120, height: 120, padding: 5, strokeColor: '#ff8da1', radicalColor: '#ff69b4', delayBetweenStrokes: 200, showOutline: true });
+            writer.animateCharacter();
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == document.getElementById('modal')) closeModal(); }
+        document.getElementById('character-target').addEventListener('click', function() { if(writer) writer.animateCharacter(); });
+
+        function updateSpeedLabel(val) { document.getElementById('speedLabel').innerText = val + 'x'; }
+        function clearHighlights() { document.querySelectorAll('.highlight-word').forEach(el => el.classList.remove('highlight-word')); }
+
+        function playWord(wordText) {
             window.speechSynthesis.cancel();
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-TW';
-            utterance.rate = 0.8;
-            utterance.onend = resolve;
-            utterance.onerror = resolve;
-            window.speechSynthesis.speak(utterance);
-            setTimeout(resolve, 1500);
-        });
-    }
-
-    function playCurrentWord() {
-        playAudio(currentQuestions[qIndex].pinyinFull);
-    }
-
-    async function playAllOptionsForComparison(q) {
-        const feedback = document.getElementById('feedback-text');
-        for(let i = 0; i < q.fullSounds.length; i++) {
-            feedback.innerHTML = `Đang nghe thử: <strong>${q.fullSounds[i]}</strong> (${q.options[i]})`;
-            await playAudio(q.fullSounds[i]);
-            await new Promise(r => setTimeout(r, 600));
+            const msg = new SpeechSynthesisUtterance(wordText);
+            msg.lang = 'zh-TW'; 
+            msg.rate = parseFloat(document.getElementById('speedRate').value);    
+            window.speechSynthesis.speak(msg);
         }
-        feedback.innerHTML = `Giờ hãy nghe lại từ gốc <strong>${q.pinyinFull}</strong>!`;
-        await playAudio(q.pinyinFull);
-        isProcessing = false;
-    }
 
-    async function handleAnswer(selectedIndex, btnElement) {
-        if (isProcessing) return;
-
-        const q = currentQuestions[qIndex];
-        const feedback = document.getElementById('feedback-text');
-
-        if (selectedIndex === q.correctIdx) {
-            isProcessing = true;
-            btnElement.classList.add('correct');
-            document.getElementById('cat-mascot').style.backgroundImage = `url('${catEmotions.happy}')`;
-            feedback.innerHTML = `✅ <strong>Chính xác!</strong> ${q.exp}`;
-            feedback.style.background = "#e2f5ec";
-            document.getElementById('next-btn').style.display = "block";
-            playCurrentWord();
-        } else {
-            isProcessing = true;
-            btnElement.classList.add('wrong');
-            document.getElementById('cat-mascot').style.backgroundImage = `url('${catEmotions.sad}')`;
-            feedback.style.background = "#ffeded";
-            feedback.innerHTML = `❌ Sai rồi! Hệ thống sẽ đọc toàn bộ 4 phương án ghép lại để bạn phân biệt nhé...`;
-            await playAllOptionsForComparison(q);
+        function stopAudio() {
+            window.speechSynthesis.cancel();
+            clearHighlights();
         }
-    }
 
-    function nextQuestion() {
-        qIndex++;
-        if (qIndex < currentQuestions.length) {
-            loadQuestion();
-        } else {
-            document.getElementById('game-screen').innerHTML = `
-                <div class="hanzi-display">🎉</div>
-                <h2>Hoàn thành xuất sắc!</h2>
-                <p>Bạn đã vượt qua 50 câu hỏi của cấp độ này.</p>
-                <button class="play-audio-btn" onclick="location.reload()">Trở về Trang Chủ</button>
-            `;
+        function playFullText() {
+            window.speechSynthesis.cancel();
+            clearHighlights();
+            
+            const msg = new SpeechSynthesisUtterance(window.storyTextOnly);
+            msg.lang = 'zh-TW'; 
+            msg.rate = parseFloat(document.getElementById('speedRate').value);
+            
+            msg.onboundary = function(event) {
+                if (event.name === 'word' || event.name === 'sentence') {
+                    clearHighlights();
+                    let start = event.charIndex;
+                    let len = event.charLength || 1; 
+                    
+                    for (let i = 0; i < len; i++) {
+                        let span = document.querySelector(`span[data-idx="${start + i}"]`);
+                        if (span && span.classList.contains('hanzi-char')) {
+                            span.classList.add('highlight-word');
+                        }
+                    }
+                }
+            };
+            
+            msg.onend = function() { clearHighlights(); };
+            window.speechSynthesis.speak(msg);
         }
-    }
-</script>
+
+        renderText();
+    </script>
 </body>
 </html>
