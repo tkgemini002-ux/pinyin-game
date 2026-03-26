@@ -7,57 +7,67 @@
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-color: #fff0f5; --primary: #ff8da1; --secondary: #ffb6c1; --text-main: #5a3e46; --white: #ffffff; }
+        :root { --bg-color: #fff0f5; --primary: #ff8da1; --secondary: #ffb6c1; --text-main: #5a3e46; --white: #ffffff; --highlight: #fff3cd; }
         body { background-color: var(--bg-color); background-image: radial-gradient(var(--secondary) 1.5px, transparent 1.5px); background-size: 25px 25px; font-family: 'Quicksand', sans-serif; color: var(--text-main); line-height: 1.8; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(255, 141, 161, 0.2); border: 2px solid var(--white); }
         h1 { text-align: center; color: var(--primary); font-size: 2.2rem; margin-bottom: 25px; }
         
-        .controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 25px; padding: 20px; background: #fff9fa; border-radius: 15px; border: 2px dashed var(--secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 25px; padding: 20px; background: #fff9fa; border-radius: 15px; border: 2px dashed var(--secondary); }
         .audio-buttons { display: flex; gap: 15px; }
         .btn-full-audio { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 141, 161, 0.4); transition: 0.2s; font-family: inherit; }
-        .btn-full-audio:hover { transform: translateY(-3px); background: #ff728a; box-shadow: 0 6px 20px rgba(255, 141, 161, 0.6); }
+        .btn-full-audio:hover { transform: translateY(-3px); background: #ff728a; }
         .btn-stop-audio { background: var(--secondary); color: white; border: none; padding: 12px 20px; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; }
         .btn-stop-audio:hover { background: #ff91a4; transform: translateY(-2px); }
+        .speed-control { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.1rem; background: white; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--secondary); }
         
-        .speed-control { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.1rem; color: var(--text-main); background: white; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--secondary); }
-        input[type=range] { accent-color: var(--primary); cursor: pointer; }
-        
-        .reading-text { font-size: 1.4rem; text-align: justify; padding: 25px; background: #fff9fa; border-radius: 15px; border-left: 6px solid var(--primary); box-shadow: inset 0 2px 10px rgba(0,0,0,0.02); line-height: 2.3; }
+        .reading-text { font-size: 1.4rem; text-align: justify; padding: 25px; background: #fff9fa; border-radius: 15px; border-left: 6px solid var(--primary); line-height: 2.3; position: relative; }
         
         .hanzi-char { cursor: pointer; transition: all 0.2s; display: inline-block; margin: 0 1px; border-bottom: 2px dashed transparent; }
         .hanzi-char:hover { color: var(--primary); transform: scale(1.2); font-weight: bold; border-bottom: 2px dashed var(--primary); background: #fff0f5; border-radius: 5px; }
         
-        .highlight-word { background-color: var(--primary) !important; color: white !important; border-radius: 5px; padding: 0 4px; transform: scale(1.15); box-shadow: 0 3px 8px rgba(255, 141, 161, 0.5); border-bottom: none !important; font-weight: bold; z-index: 10; position: relative; }
+        /* Hiệu ứng khi có ghi chú cá nhân */
+        .has-user-note { background-color: var(--highlight); border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
-        .scene-marker { color: #b78a96; font-size: 1.2rem; font-style: italic; }
-        .speaker-name { color: #d66a81; font-weight: bold; }
+        /* Tooltip khi bôi đen chữ */
+        #selection-tooltip { display: none; position: absolute; z-index: 500; background: var(--text-main); color: white; padding: 8px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.2s; }
+        #selection-tooltip:hover { transform: scale(1.05) translateX(-50%) !important; background: var(--primary); }
+        #selection-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: var(--text-main) transparent transparent transparent; }
+        #selection-tooltip:hover::after { border-color: var(--primary) transparent transparent transparent; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(90, 62, 70, 0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal-box { background: var(--white); width: 90%; max-width: 550px; border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(255, 141, 161, 0.4); position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto; }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: var(--secondary); transition: 0.2s; }
         .close-btn:hover { color: var(--primary); transform: rotate(90deg); }
+        
         .modal-header { display: flex; align-items: center; gap: 20px; border-bottom: 2px dashed var(--secondary); padding-bottom: 20px; margin-bottom: 20px; }
         #character-target { width: 120px; height: 120px; background: #fff0f5; border-radius: 15px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .char-details h2 { margin: 0; color: var(--primary); font-size: 2.2rem; }
         .char-details .pinyin { font-size: 1.3rem; color: #888; font-style: italic; margin-bottom: 10px; }
-        .btn-audio { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-family: inherit; font-weight: 600; transition: 0.2s; box-shadow: 0 4px 10px rgba(255, 141, 161, 0.4); font-size: 1rem; }
-        .btn-audio:hover { background: #ff728a; transform: translateY(-2px); }
+        
         .info-section { margin-bottom: 18px; font-size: 1.1rem; }
         .info-section strong { color: var(--primary); font-size: 1.2rem;}
-        .tree-container { display: flex; align-items: center; gap: 30px; margin-top: 20px; padding: 20px; background: #fff9fa; border-radius: 15px; border: 2px dashed var(--secondary); overflow-x: auto; }
-        .tree-root { background: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; font-weight: bold; font-size: 1.5rem; box-shadow: 0 5px 15px rgba(255, 141, 161, 0.4); flex-shrink: 0; position: relative; }
-        .tree-branches { display: flex; flex-direction: column; gap: 15px; position: relative; }
+        
+        /* Box Ghi chú cá nhân */
+        .user-note-box { background: #fffae6; padding: 15px; border-radius: 12px; border: 1px solid #ffeeba; margin-top: 20px; }
+        .user-note-box h3 { margin: 0 0 10px 0; color: #d39e00; font-size: 1.1rem; display: flex; align-items: center; gap: 5px; }
+        .user-note-textarea { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px dashed #ffeeba; font-family: inherit; font-size: 1rem; resize: vertical; min-height: 80px; margin-bottom: 10px; }
+        .user-note-textarea:focus { outline: none; border-color: #d39e00; background: white; }
+        .btn-save-note { background: #d39e00; color: white; border: none; padding: 8px 15px; border-radius: 15px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-save-note:hover { background: #c69500; transform: scale(1.05); }
+
+        .scene-marker { color: #b78a96; font-size: 1.2rem; font-style: italic; }
+        .speaker-name { color: #d66a81; font-weight: bold; }
+        .highlight-tts { background-color: var(--primary) !important; color: white !important; border-radius: 5px; padding: 0 4px; transform: scale(1.15); box-shadow: 0 3px 8px rgba(255, 141, 161, 0.5); z-index: 10; position: relative; }
+        
+        .tree-container { display: flex; align-items: center; gap: 30px; margin-top: 10px; padding: 15px; background: #fff9fa; border-radius: 15px; border: 2px dashed var(--secondary); overflow-x: auto; }
+        .tree-root { background: var(--primary); color: white; padding: 10px 15px; border-radius: 12px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 5px 15px rgba(255, 141, 161, 0.4); flex-shrink: 0; position: relative; }
+        .tree-branches { display: flex; flex-direction: column; gap: 10px; position: relative; }
         .tree-branches::before { content: ''; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); width: 30px; height: 2px; background: var(--secondary); }
-        .tree-branch { background: white; padding: 10px 15px; border-radius: 10px; border: 1px solid var(--secondary); position: relative; box-shadow: 0 3px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; min-width: 150px; transition: 0.2s; }
-        .tree-branch:hover { transform: translateX(5px); border-color: var(--primary); }
+        .tree-branch { background: white; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--secondary); position: relative; box-shadow: 0 3px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; min-width: 130px; }
         .tree-branch::before { content: ''; position: absolute; left: -30px; top: 50%; width: 30px; height: 2px; background: var(--secondary); }
         .branch-header { display: flex; justify-content: space-between; align-items: center; }
         .branch-word { font-weight: bold; color: var(--text-main); font-size: 1.1rem; }
-        .branch-btn-audio { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0; margin-left: 10px; transition: 0.2s; }
-        .branch-btn-audio:hover { transform: scale(1.3); }
-        .branch-pinyin { font-size: 0.9rem; color: #888; font-style: italic; }
-        .branch-meaning { font-size: 0.95rem; color: var(--primary); margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -67,7 +77,7 @@
         
         <div class="controls-container">
             <div class="audio-buttons">
-                <button class="btn-full-audio" onclick="playFullText()">🔊 Bắt đầu nghe Hội thoại</button>
+                <button class="btn-full-audio" onclick="playFullText()">🔊 Nghe Hội thoại</button>
                 <button class="btn-stop-audio" onclick="stopAudio()">⏹ Dừng</button>
             </div>
             <div class="speed-control">
@@ -80,22 +90,57 @@
         <div class="reading-text" id="text-container"></div>
     </div>
 
-    <div class="modal-overlay" id="modal">
+    <div id="selection-tooltip" onclick="openCompoundModal()">Tra cụm từ 🔍</div>
+
+    <div class="modal-overlay" id="single-modal">
         <div class="modal-box">
-            <span class="close-btn" onclick="closeModal()">✖</span>
+            <span class="close-btn" onclick="closeModal('single-modal')">✖</span>
             <div class="modal-header">
                 <div id="character-target" title="Bấm để xem lại nét viết"></div>
                 <div class="char-details">
-                    <h2 id="modal-char">字</h2>
-                    <div class="pinyin" id="modal-pinyin">zì</div>
-                    <button class="btn-audio" onclick="playWord(currentChar)">🔊 Nghe chữ này</button>
+                    <h2 id="single-char">字</h2>
+                    <div class="pinyin" id="single-pinyin">zì</div>
+                    <button class="btn-save-note" style="background:var(--primary)" onclick="playWord(document.getElementById('single-char').innerText)">🔊 Nghe</button>
                 </div>
             </div>
-            <div class="info-section"><strong>📝 Ý nghĩa:</strong> <span id="modal-meaning"></span></div>
-            <div class="info-section"><strong>🎀 Cách dùng:</strong> <span id="modal-usage"></span></div>
+            <div class="info-section"><strong>📝 Ý nghĩa:</strong> <span id="single-meaning"></span></div>
+            <div class="info-section"><strong>🎀 Cách dùng:</strong> <span id="single-usage"></span></div>
+            
+            <div id="display-note-section" class="user-note-box" style="display: none;">
+                <h3>📓 Ghi chú cụm từ của bạn:</h3>
+                <div id="display-note-content" style="white-space: pre-wrap;"></div>
+            </div>
+
             <div class="info-section" style="margin-top: 25px;">
                 <strong>🌳 Bản đồ từ vựng:</strong>
                 <div class="tree-container" id="tree-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="compound-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeModal('compound-modal')">✖</span>
+            <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                <div class="char-details" style="width: 100%;">
+                    <h2 id="compound-word" style="font-size: 2.5rem; text-align: center;">詞彙</h2>
+                    <div class="pinyin" id="compound-pinyin" style="text-align: center; font-size: 1.5rem;">cí huì</div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button class="btn-save-note" style="background:var(--primary)" onclick="playWord(document.getElementById('compound-word').innerText)">🔊 Nghe cụm từ</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section" style="margin-top: 20px; background: #fff0f5; padding: 15px; border-radius: 12px; text-align: center;">
+                <strong>💡 Giải nghĩa AI:</strong> <br>
+                <span id="compound-meaning" style="font-size: 1.2rem; color: #d66a81;">(Đang kiểm tra từ điển...)</span>
+            </div>
+
+            <div class="user-note-box">
+                <h3>✍️ Ghi chú cá nhân của bạn:</h3>
+                <textarea id="compound-note-input" class="user-note-textarea" placeholder="Bạn có mẹo gì để nhớ cụm từ này không? Ghi vào đây nhé..."></textarea>
+                <button class="btn-save-note" onclick="saveUserNote()">💾 Lưu Ghi Chú & Đánh dấu</button>
+                <span id="save-status" style="color: green; margin-left: 10px; font-weight: bold; display: none;">Đã lưu!</span>
             </div>
         </div>
     </div>
@@ -182,173 +227,235 @@
 李明華： 不客氣。
 張怡君： 我們照相吧！一、二、三，照相！這照片都很好看！`;
 
-        // TỪ ĐIỂN ĐÃ ĐƯỢC CẬP NHẬT 100% HOÀN CHỈNH, BỔ SUNG CÁC TỪ CÒN THIẾU
+        // TỪ ĐIỂN ĐƠN ÂM
         const rawDict = {
-            "這": ["zhè", "Đây, này", "這房子很漂亮 (Ngôi nhà này rất đẹp)", "這個|zhè ge|Cái này", "這裡|zhè lǐ|Ở đây", "這樣|zhè yàng|Như thế này"],
-            "是": ["shì", "Là, vâng", "這房子是我家 (Ngôi nhà này là nhà tôi)", "是的|shì de|Đúng vậy", "但是|dàn shì|Nhưng mà", "是否|shì fǒu|Có phải không"],
-            "一": ["yī", "Một", "一、二、三 (1, 2, 3)", "一起|yì qǐ|Cùng nhau", "一半|yí bàn|Một nửa", "一定|yí dìng|Nhất định"],
-            "篇": ["piān", "Bài (lượng từ)", "這是一篇閱讀測驗", "篇幅|piān fú|Độ dài bài", "長篇|cháng piān|Bài dài", "短篇|duǎn piān|Truyện ngắn"],
-            "為": ["wèi / wéi", "Vì, cho / Là", "為您量身打造", "因為|yīn wèi|Bởi vì", "為了|wèi le|Để, vì", "以為|yǐ wéi|Cho rằng"],
-            "您": ["nín", "Ngài, bạn (kính trọng)", "請問您是哪國人？ (Xin hỏi ngài người nước nào?)", "您好|nín hǎo|Xin chào", "您們|nín men|Các ngài", "您早|nín zǎo|Chào buổi sáng"],
-            "的": ["de", "Của (trợ từ sở hữu)", "我的家人 (Người nhà của tôi)", "真的|zhēn de|Thật sự", "目的|mù dì|Mục đích", "你的|nǐ de|Của bạn"],
-            "有": ["yǒu", "Hữu, có", "有房子 (Có nhà)", "沒有|méi yǒu|Không có", "有趣|yǒu qù|Thú vị", "有名|yǒu míng|Nổi tiếng"],
-            "房": ["fáng", "Phòng, nhà", "房子 (Ngôi nhà)", "房間|fáng jiān|Căn phòng", "房東|fáng dōng|Chủ nhà", "書房|shū fáng|Phòng sách"],
-            "子": ["zi", "Tử (hậu tố)", "房子 (Ngôi nhà)", "孩子|hái zi|Đứa trẻ", "桌子|zhuō zi|Cái bàn", "椅子|yǐ zi|Cái ghế"],
-            "很": ["hěn", "Rất", "很漂亮 (Rất đẹp)", "很好|hěn hǎo|Rất tốt", "很多|hěn duō|Rất nhiều", "很高|hěn gāo|Rất cao"],
-            "漂": ["piào", "Phiêu (Đẹp)", "很漂亮 (Rất đẹp)", "漂亮|piào liàng|Xinh đẹp", "漂浮|piāo fú|Trôi nổi", "漂流|piāo liú|Trôi dạt"],
-            "亮": ["liàng", "Lượng (Sáng)", "很漂亮 (Rất đẹp)", "明亮|míng liàng|Sáng sủa", "月亮|yuè liàng|Mặt trăng", "天亮|tiān liàng|Trời sáng"],
-            "美": ["měi", "Mỹ (Đẹp)", "很美 (Rất đẹp)", "美國|měi guó|Nước Mỹ", "美味|měi wèi|Thơm ngon", "美女|měi nǚ|Mỹ nữ"],
-            "都": ["dōu", "Đều", "這照片都很好看 (Các ảnh này đều đẹp)", "首都|shǒu dū|Thủ đô", "都市|dū shì|Đô thị", "全都|quán dōu|Tất cả đều"],
-            "來": ["lái", "Lai (Đến)", "明天早上來 (Sáng mai đến)", "回來|huí lái|Trở về", "起來|qǐ lái|Đứng lên", "未來|wèi lái|Tương lai"],
-            "家": ["jiā", "Gia (Nhà)", "這是我家 (Đây là nhà tôi)", "家庭|jiā tíng|Gia đình", "國家|guó jiā|Quốc gia", "大家|dà jiā|Mọi người"],
-            "歡": ["huān", "Hoan (Vui)", "歡迎！ (Hoan nghênh!)", "喜歡|xǐ huān|Thích", "歡樂|huān lè|Vui vẻ", "狂歡|kuáng huān|Cuồng hoan"],
-            "迎": ["yíng", "Nghênh (Đón)", "歡迎！ (Hoan nghênh!)", "迎接|yíng jiē|Nghênh tiếp", "迎面|yíng miàn|Trước mặt", "迎風|yíng fēng|Đón gió"],
-            "請": ["qǐng", "Thỉnh (Mời)", "請進 (Mời vào)", "請問|qǐng wèn|Xin hỏi", "請客|qǐng kè|Mời khách", "申請|shēn qǐng|Xin phép"],
-            "進": ["jìn", "Tiến (Vào)", "請進 (Mời vào)", "進來|jìn lái|Vào đây", "進步|jìn bù|Tiến bộ", "進入|jìn rù|Đi vào"],
-            "坐": ["zuò", "Tọa (Ngồi)", "請坐 (Mời ngồi)", "坐下|zuò xià|Ngồi xuống", "坐車|zuò chē|Ngồi xe", "請坐|qǐng zuò|Mời ngồi"],
-            "謝": ["xiè", "Tạ (Cảm ơn)", "謝謝 (Cảm ơn)", "感謝|gǎn xiè|Cảm tạ", "道謝|dào xiè|Nói cảm ơn", "凋謝|diāo xiè|Khô héo"],
-            "你": ["nǐ", "Nhĩ (Bạn)", "你們好 (Chào các bạn)", "你好|nǐ hǎo|Xin chào", "你們|nǐ men|Các bạn", "你的|nǐ de|Của bạn"],
-            "們": ["men", "Môn (Hậu tố số nhiều)", "你們好 (Chào các bạn)", "我們|wǒ men|Chúng tôi", "他們|tā men|Họ", "人們|rén men|Mọi người"],
-            "好": ["hǎo", "Hảo (Tốt)", "很好看 (Rất đẹp)", "好像|hǎo xiàng|Hình như", "好吃|hǎo chī|Ngon", "好人|hǎo rén|Người tốt"],
-            "看": ["kàn", "Khán (Nhìn)", "很好看 (Rất đẹp)", "看見|kàn jiàn|Nhìn thấy", "看書|kàn shū|Đọc sách", "好看|hǎo kàn|Đẹp, hay"],
-            "問": ["wèn", "Vấn (Hỏi)", "請問 (Xin hỏi)", "問題|wèn tí|Vấn đề", "訪問|fǎng wèn|Thăm hỏi", "學問|xué wèn|Học vấn"],
-            "照": ["zhào", "Chiếu", "照片 (Bức ảnh)", "照顧|zhào gù|Chăm sóc", "護照|hù zhào|Hộ chiếu", "照相|zhào xiàng|Chụp ảnh"],
-            "片": ["piàn", "Phiến (Tấm/Mảnh)", "照片 (Bức ảnh)", "名片|míng piàn|Danh thiếp", "卡片|kǎ piàn|Tấm thiệp", "片面|piàn miàn|Phiến diện"],
-            "嗎": ["ma", "Ma (Không)", "是張小姐的嗎？ (Phải của cô Trương không?)", "好嗎|hǎo ma|Được không", "對嗎|duì ma|Đúng không", "去嗎|qù ma|Đi không"],
-            "我": ["wǒ", "Ngã (Tôi)", "我是美國人 (Tôi là người Mỹ)", "我們|wǒ men|Chúng ta", "自我|zì wǒ|Tự bản thân", "我的|wǒ de|Của tôi"],
-            "人": ["rén", "Nhân (Người)", "有很多人 (Có rất nhiều người)", "男人|nán rén|Đàn ông", "女人|nǚ rén|Phụ nữ", "別人|bié rén|Người khác"],
-            "誰": ["shéi", "Thùy (Ai)", "請問這是誰 (Xin hỏi đây là ai)", "是誰|shì shéi|Là ai", "誰的|shéi de|Của ai", "誰知道|shéi zhī dào|Ai biết"],
-            "呢": ["ne", "Ni (Nhỉ - Trợ từ)", "馬先生呢？ (Thế còn ông Mã?)", "你呢|nǐ ne|Còn bạn", "人呢|rén ne|Người đâu rồi", "怎麼呢|zěn me ne|Làm sao nhỉ"],
-            "爸": ["bà", "Ba", "爸爸 (Bố)", "爸爸|bà ba|Bố", "老爸|lǎo bà|Ông già (gọi thân mật)", "爸媽|bà mā|Bố mẹ"],
-            "媽": ["mā", "Má (Mẹ)", "媽媽 (Mẹ)", "媽媽|mā ma|Mẹ", "大媽|dà mā|Bác gái", "老媽|lǎo mā|Bà già (gọi thân mật)"],
-            "姐": ["jiě", "Tỷ (Chị)", "姐姐 (Chị gái)", "姐姐|jiě jie|Chị gái", "小姐|xiǎo jiě|Cô gái", "姐妹|jiě mèi|Chị em"],
-            "妹": ["mèi", "Muội (Em gái)", "妹妹 (Em gái)", "妹妹|mèi mei|Em gái", "姐妹|jiě mèi|Chị em", "表妹|biǎo mèi|Em họ"],
-            "六": ["liù", "Lục (Sáu)", "六人 (Sáu người)", "星期六|xīng qī liù|Thứ bảy", "六月|liù yuè|Tháng sáu", "六十|liù shí|Sáu mươi"],
-            "先": ["xiān", "Tiên (Trước)", "馬先生 (Ông Mã)", "先生|xiān shēng|Ngài, anh", "首先|shǒu xiān|Đầu tiên", "先後|xiān hòu|Trước sau"],
-            "生": ["shēng", "Sinh", "馬先生 (Ông Mã)", "生活|shēng huó|Cuộc sống", "生日|shēng rì|Sinh nhật", "學生|xué shēng|Học sinh"],
-            "哪": ["nǎ", "Nào", "哪國人 (Người nước nào)", "哪裡|nǎ lǐ|Ở đâu", "哪個|nǎ ge|Cái nào", "哪怕|nǎ pà|Cho dù"],
-            "國": ["guó", "Quốc", "哪國人 (Người nước nào)", "國家|guó jiā|Quốc gia", "國外|guó wài|Nước ngoài", "國際|guó jì|Quốc tế"],
-            "姓": ["xìng", "Tính (Họ)", "您姓什麼 (Ngài họ gì)", "姓名|xìng míng|Họ tên", "百姓|bǎi xìng|Bách tính", "貴姓|guì xìng|Quý danh"],
-            "什": ["shén", "Thập (Gì)", "什麼 (Cái gì)", "什麼|shén me|Cái gì", "為什麼|wèi shén me|Tại sao", "憑什麼|píng shén me|Dựa vào cái gì"],
-            "麼": ["me", "Ma (Gì)", "什麼 (Cái gì)", "什麼|shén me|Cái gì", "怎麼|zěn me|Thế nào", "這麼|zhè me|Như thế này"],
-            "叫": ["jiào", "Khiếu (Gọi)", "名字叫張怡君 (Tên gọi Trương Di Quân)", "叫聲|jiào shēng|Tiếng kêu", "大叫|dà jiào|Kêu to", "叫做|jiào zuò|Gọi là"],
-            "日": ["rì", "Nhật", "日本人 (Người Nhật Bản)", "日本|rì běn|Nhật Bản", "日記|rì jì|Nhật ký", "節日|jié rì|Ngày lễ"],
-            "本": ["běn", "Bản", "日本人 (Người Nhật Bản)", "書本|shū běn|Sách", "本來|běn lái|Vốn dĩ", "根本|gēn běn|Căn bản"],
-            "台": ["tái", "Đài", "台灣人 (Người Đài Loan)", "台灣|tái wān|Đài Loan", "台北|tái běi|Đài Bắc", "上台|shàng tái|Lên đài"],
-            "灣": ["wān", "Loan", "台灣人 (Người Đài Loan)", "海灣|hǎi wān|Vịnh biển", "台灣|tái wān|Đài Loan", "轉灣|zhuǎn wān|Rẽ"],
-            "要": ["yào", "Yếu (Muốn/Phải)", "您要喝茶嗎？ (Ngài muốn uống trà không?)", "需要|xū yào|Cần thiết", "要求|yāo qiú|Yêu cầu", "重要|zhòng yào|Quan trọng"],
-            "喝": ["hē", "Hát (Uống)", "要喝什麼 (Muốn uống gì)", "喝水|hē shuǐ|Uống nước", "好喝|hǎo hē|Ngon (đồ uống)", "喝醉|hē zuì|Uống say"],
-            "茶": ["chá", "Trà", "要茶 (Muốn dùng trà)", "奶茶|nǎi chá|Trà sữa", "茶葉|chá yè|Lá trà", "喝茶|hē chá|Uống trà"],
-            "咖": ["kā", "Cà", "咖啡 (Cà phê)", "咖啡|kā fēi|Cà phê", "咖哩|gā lǐ|Cà ri", "咖啡館|kā fēi guǎn|Quán cafe"],
-            "啡": ["fēi", "Phê", "咖啡 (Cà phê)", "咖啡|kā fēi|Cà phê", "咖啡色|kā fēi sè|Màu nâu cafe", "黑咖啡|hēi kā fēi|Cafe đen"],
-            "喜": ["xǐ", "Hỷ (Thích/Vui)", "我喜歡 (Tôi thích)", "喜歡|xǐ huān|Thích", "喜劇|xǐ jù|Hài kịch", "恭喜|gōng xǐ|Chúc mừng"],
-            "烏": ["wū", "Ô (Đen)", "烏龍茶 (Trà Ô long)", "烏黑|wū hēi|Đen nhánh", "烏鴉|wū yā|Con quạ", "烏雲|wū yún|Mây đen"],
-            "龍": ["lóng", "Long (Rồng)", "烏龍茶 (Trà Ô long)", "恐龍|kǒng lóng|Khủng long", "龍頭|lóng tóu|Vòi nước", "神龍|shén lóng|Thần long"],
-            "對": ["duì", "Đối (Đúng)", "對不起 (Xin lỗi)", "對不起|duì bù qǐ|Xin lỗi", "對面|duì miàn|Đối diện", "對話|duì huà|Đối thoại"],
-            "不": ["bù", "Bất (Không)", "對不起 (Xin lỗi)", "不是|bú shì|Không phải", "不行|bù xíng|Không được", "不錯|bú cuò|Không tồi"],
-            "起": ["qǐ", "Khởi (Dậy/Lên)", "對不起 (Xin lỗi)", "起來|qǐ lái|Đứng lên", "起床|qǐ chuáng|Ngủ dậy", "起飛|qǐ fēi|Cất cánh"],
-            "去": ["qù", "Khứ (Đi)", "我去接伯母 (Tôi đi đón bác gái)", "去年|qù nián|Năm ngoái", "過去|guò qù|Quá khứ", "回去|huí qù|Trở về"],
-            "接": ["jiē", "Tiếp (Đón/Nhận)", "去接家人 (Đi đón người nhà)", "接受|jiē shòu|Chấp nhận", "接著|jiē zhe|Tiếp theo", "迎接|yíng jiē|Đón tiếp"],
-            "老": ["lǎo", "Lão (Già)", "李老師 (Thầy giáo Lý)", "老師|lǎo shī|Giáo viên", "老人|lǎo rén|Người già", "老婆|lǎo pó|Vợ"],
-            "師": ["shī", "Sư (Thầy)", "李老師 (Thầy giáo Lý)", "老師|lǎo shī|Giáo viên", "律師|lǜ shī|Luật sư", "醫師|yī shī|Bác sĩ"],
-            "三": ["sān", "Tam (Ba)", "三十五塊 (35 tệ)", "三個|sān ge|Ba cái", "星期三|xīng qī sān|Thứ tư", "三明治|sān míng zhì|Sandwich"],
-            "萬": ["wàn", "Vạn (Mười nghìn)", "八十萬 (80 vạn/800 ngàn)", "一萬|yí wàn|Mười nghìn", "千萬|qiān wàn|Nhất thiết", "萬歲|wàn suì|Vạn tuế"],
-            "塊": ["kuài", "Khối (Tệ/Cục)", "四十五塊 (45 tệ)", "一塊|yí kuài|Một tệ/cục", "冰塊|bīng kuài|Cục đá", "方塊|fāng kuài|Khối vuông"],
-            "五": ["wǔ", "Ngũ (Năm)", "四十五塊 (45 tệ)", "五個|wǔ ge|Năm cái", "星期五|xīng qī wǔ|Thứ sáu", "五月|wǔ yuè|Tháng năm"],
-            "八": ["bā", "Bát (Tám)", "八十萬 (80 vạn/800 ngàn)", "八個|bā ge|Tám cái", "星期八|xīng qī bā|Ngày nghỉ", "八月|bā yuè|Tháng tám"],
-            "多": ["duō", "Đa (Nhiều)", "很多人 (Rất nhiều người)", "多少|duō shǎo|Bao nhiêu", "很多|hěn duō|Rất nhiều", "多數|duō shù|Đa số"],
-            "她": ["tā", "Tha (Cô ấy)", "她名字叫 (Tên cô ấy gọi là)", "她們|tā men|Các cô ấy", "她的|tā de|Của cô ấy", "她自己|tā zì jǐ|Chính cô ấy"],
-            "名": ["míng", "Danh (Tên)", "名字 (Tên gọi)", "名字|míng zì|Tên", "有名|yǒu míng|Nổi tiếng", "名片|míng piàn|Danh thiếp"],
-            "臺": ["tái", "Đài", "臺北 (Đài Bắc)", "臺北|tái běi|Đài Bắc", "臺灣|tái wān|Đài Loan", "舞臺|wǔ tái|Sân khấu"],
-            "北": ["běi", "Bắc", "臺北 (Đài Bắc)", "北京|běi jīng|Bắc Kinh", "北方|běi fāng|Phương Bắc", "南北|nán běi|Nam Bắc"],
-            "週": ["zhōu", "Tuần", "週末的臺北聚會 (Tụ tập ở Đài Bắc cuối tuần)", "週末|zhōu mò|Cuối tuần", "週年|zhōu nián|Kỷ niệm năm", "每週|měi zhōu|Mỗi tuần"],
-            "末": ["mò", "Cuối, ngọn", "週末 (Cuối tuần)", "週末|zhōu mò|Cuối tuần", "期末|qī mò|Cuối kỳ", "末日|mò rì|Ngày tận thế"],
-            "聚": ["jù", "Tụ tập", "臺北聚會 (Buổi tụ tập ở Đài Bắc)", "聚會|jù huì|Tụ tập, liên hoan", "聚餐|jù cān|Ăn uống tụ tập", "團聚|tuán jù|Đoàn tụ"],
-            "會": ["huì", "Hội, biết", "臺北聚會 (Buổi tụ tập ở Đài Bắc)", "聚會|jù huì|Tụ tập", "開會|kāi huì|Họp", "會說|huì shuō|Biết nói"],
-            "場": ["chǎng", "Cảnh, sân", "場景一 (Cảnh 1)", "場景|chǎng jǐng|Bối cảnh", "操場|cāo chǎng|Sân vận động", "廣場|guǎng chǎng|Quảng trường"],
-            "景": ["jǐng", "Cảnh", "場景一 (Cảnh 1)", "風景|fēng jǐng|Phong cảnh", "場景|chǎng jǐng|Bối cảnh", "夜景|yè jǐng|Cảnh đêm"],
-            "今": ["jīn", "Nay", "今天天氣很好 (Hôm nay thời tiết đẹp)", "今天|jīn tiān|Hôm nay", "今年|jīn nián|Năm nay", "今晚|jīn wǎn|Tối nay"],
-            "天": ["tiān", "Trời, ngày", "今天天氣很好 (Hôm nay thời tiết đẹp)", "天氣|tiān qì|Thời tiết", "每天|měi tiān|Mỗi ngày", "天空|tiān kōng|Bầu trời"],
-            "氣": ["qì", "Khí", "今天天氣很好 (Hôm nay thời tiết đẹp)", "天氣|tiān qì|Thời tiết", "客氣|kè qì|Khách sáo", "生氣|shēng qì|Tức giận"],
-            "茹": ["rú", "Như", "白茹玉 (Bạch Như Ngọc)", "茹素|rú sù|Ăn chay", "茹玉|rú yù|Như Ngọc", "含辛茹苦|hán xīn rú kǔ|Ngậm đắng nuốt cay"],
-            "玉": ["yù", "Ngọc", "白茹玉 (Bạch Như Ngọc)", "玉佩|yù pèi|Ngọc bội", "玉米|yù mǐ|Ngô/Bắp", "寶玉|bǎo yù|Bảo ngọc"],
-            "玩": ["wán", "Chơi", "臺北很好玩 (Đài Bắc rất vui)", "好玩|hǎo wán|Vui, hay", "玩具|wán jù|Đồ chơi", "開玩笑|kāi wán xiào|Nói đùa"],
-            "早": ["zǎo", "Sớm", "明天早上來 (Sáng mai đến)", "早上|zǎo shàng|Buổi sáng", "早安|zǎo ān|Chào buổi sáng", "提早|tí zǎo|Làm sớm"],
-            "上": ["shàng", "Trên, lên", "明天早上來 (Sáng mai đến)", "早上|zǎo shàng|Buổi sáng", "上班|shàng bān|Đi làm", "上課|shàng kè|Vào học"],
-            "田": ["tián", "Điền (Họ)", "田中誠一 (Tanaka Seiichi)", "水田|shuǐ tián|Ruộng nước", "種田|zhòng tián|Trồng trọt", "田地|tián dì|Đất đai"],
-            "中": ["zhōng", "Trung", "田中誠一 (Tanaka)", "中文|zhōng wén|Tiếng Trung", "中午|zhōng wǔ|Buổi trưa", "中間|zhōng jiān|Ở giữa"],
-            "誠": ["chéng", "Thành", "田中誠一 (Tanaka Seiichi)", "誠實|chéng shí|Thành thật", "真誠|zhēn chéng|Chân thành", "誠心|chéng xīn|Thành tâm"],
-            "也": ["yě", "Cũng", "我也喝咖啡 (Tôi cũng uống cafe)", "也是|yě shì|Cũng là", "也許|yě xǔ|Có lẽ", "也好|yě hǎo|Cũng tốt"],
-            "想": ["xiǎng", "Muốn, nghĩ", "你們想喝神麼？ (Các bạn muốn uống gì?)", "想念|xiǎng niàn|Nhớ nhung", "想法|xiǎng fǎ|Suy nghĩ", "想要|xiǎng yào|Mong muốn"],
-            "還": ["hái", "Còn, hay là", "還是喝咖啡？ (Hay là uống cafe?)", "還是|hái shì|Hay là", "還有|hái yǒu|Vẫn còn", "還沒|hái méi|Vẫn chưa"],
-            "客": ["kè", "Khách", "不客氣 (Đừng khách sáo)", "客氣|kè qì|Khách sáo", "客人|kè rén|Khách", "請客|qǐng kè|Mời khách"],
-            "兩": ["liǎng", "Hai", "兩部中文書 (Hai cuốn sách tiếng Trung)", "兩個|liǎng ge|Hai cái", "兩天|liǎng tiān|Hai ngày", "兩次|liǎng cì|Hai lần"],
-            "書": ["shū", "Sách", "兩部中文書 (Hai cuốn sách tiếng Trung)", "看書|kàn shū|Đọc sách", "圖書館|tú shū guǎn|Thư viện", "書法|shū fǎ|Thư pháp"],
-            "哥": ["gē", "Anh trai", "有爸爸、哥哥... (Có bố, anh trai...)", "哥哥|gē ge|Anh trai", "大哥|dà gē|Đại ca", "表哥|biǎo gē|Anh họ"],
-            "幾": ["jǐ", "Mấy, vài", "你有幾兄弟姐妹？ (Bạn có mấy anh chị em?)", "幾個|jǐ ge|Mấy cái", "幾天|jǐ tiān|Mấy ngày", "幾歲|jǐ suì|Mấy tuổi"],
-            "兄": ["xiōng", "Huynh (Anh)", "兄弟姐妹 (Anh chị em)", "兄弟|xiōng dì|Anh em", "兄長|xiōng zhǎng|Huynh trưởng", "兄弟姐妹|xiōng dì jiě mèi|Anh chị em"],
-            "弟": ["dì", "Đệ (Em trai)", "兄弟姐妹 (Anh chị em)", "弟弟|dì di|Em trai", "兄弟|xiōng dì|Anh em", "徒弟|tú dì|Đồ đệ"],
-            "伯": ["bó", "Bá (Bác)", "伯母好嗎？ (Bác gái khỏe không?)", "伯母|bó mǔ|Bác gái", "伯父|bó fù|Bác trai", "大伯|dà bó|Bác cả"],
-            "母": ["mǔ", "Mẫu (Mẹ)", "伯母好嗎？ (Bác gái khỏe không?)", "母親|mǔ qīn|Mẹ", "伯母|bó mǔ|Bác gái", "母語|mǔ yǔ|Tiếng mẹ đẻ"],
-            "可": ["kě", "Khả (Có thể)", "可以嗎？ (Có thể không?)", "可以|kě yǐ|Có thể", "可愛|kě ài|Đáng yêu", "可是|kě shì|Nhưng mà"],
-            "以": ["yǐ", "Dĩ", "可以嗎？ (Có thể không?)", "可以|kě yǐ|Có thể", "所以|suǒ yǐ|Cho nên", "以為|yǐ wéi|Cho rằng"],
-            "新": ["xīn", "Tân (Mới)", "新朋友 (Bạn mới)", "新年|xīn nián|Năm mới", "新聞|xīn wén|Tin tức", "新鮮|xīn xiān|Tươi mới"],
-            "朋": ["péng", "Bằng (Bạn)", "新朋友 (Bạn mới)", "朋友|péng yǒu|Bạn bè", "男朋友|nán péng yǒu|Bạn trai", "女朋友|nǚ péng yǒu|Bạn gái"],
-            "友": ["yǒu", "Hữu (Bạn)", "新朋友 (Bạn mới)", "朋友|péng yǒu|Bạn bè", "友好|yǒu hǎo|Hữu nghị", "網友|wǎng yǒu|Bạn trên mạng"],
-            "籍": ["jí", "Tịch", "國籍 (Quốc tịch)", "國籍|guó jí|Quốc tịch", "書籍|shū jí|Sách vở", "戶籍|hù jí|Hộ khẩu"],
-            "常": ["cháng", "Thường", "週末你們常做什麼？ (Cuối tuần thường làm gì?)", "常常|cháng cháng|Thường xuyên", "平常|píng cháng|Bình thường", "非常|fēi cháng|Vô cùng"],
-            "做": ["zuò", "Làm", "週末你們常做什麼？ (Cuối tuần thường làm gì?)", "做事|zuò shì|Làm việc", "做飯|zuò fàn|Nấu cơm", "叫做|jiào zuò|Gọi là"],
-            "運": ["yùn", "Vận", "做運動嗎？ (Có tập thể dục không?)", "運動|yùn dòng|Thể thao", "運氣|yùn qì|Vận khí, may mắn", "運輸|yùn shū|Vận chuyển"],
-            "動": ["dòng", "Động", "做運動嗎？ (Có tập thể dục không?)", "運動|yùn dòng|Thể thao", "動物|dòng wù|Động vật", "感動|gǎn dòng|Cảm động"],
-            "球": ["qiú", "Cầu (Bóng)", "我喜歡打球 (Tôi thích chơi bóng)", "打球|dǎ qiú|Đánh bóng", "足球|zú qiú|Bóng đá", "地球|dì qiú|Trái đất"],
-            "網": ["wǎng", "Võng (Lưới)", "我喜歡打網球 (Tôi thích đánh tennis)", "網球|wǎng qiú|Tennis", "上網|shàng wǎng|Lên mạng", "網路|wǎng lù|Mạng internet"],
-            "棒": ["bàng", "Bổng (Gậy)", "打棒球 (Đánh bóng chày)", "棒球|bàng qiú|Bóng chày", "很棒|hěn bàng|Rất tuyệt", "冰棒|bīng bàng|Kem que"],
-            "籃": ["lán", "Lam (Rổ)", "喜歡打籃球 (Thích chơi bóng rổ)", "籃球|lán qiú|Bóng rổ", "花籃|huā lán|Giỏ hoa", "搖籃|yáo lán|Nôi"],
-            "游": ["yóu", "Du (Bơi)", "我喜歡游泳 (Tôi thích bơi lội)", "游泳|yóu yǒng|Bơi lội", "遊戲|yóu xì|Trò chơi", "旅遊|lǚ yóu|Du lịch"],
-            "泳": ["yǒng", "Vịnh (Bơi)", "我喜歡游泳 (Tôi thích bơi lội)", "游泳|yóu yǒng|Bơi lội", "泳衣|yǒng yī|Đồ bơi", "泳池|yǒng chí|Hồ bơi"],
-            "踢": ["tī", "Thích (Đá)", "喜歡踢足球 (Thích đá bóng)", "踢足球|tī zú qiú|Đá bóng", "踢開|tī kāi|Đá văng", "踢毽子|tī jiàn zi|Đá cầu"],
-            "足": ["zú", "Túc (Chân, đủ)", "喜歡踢足球 (Thích đá bóng)", "足球|zú qiú|Bóng đá", "足夠|zú gòu|Đủ", "滿足|mǎn zú|Thỏa mãn"],
-            "覺": ["jué", "Giác", "我覺得踢足球很好玩 (Tôi thấy đá bóng rất vui)", "覺得|jué de|Cảm thấy", "感覺|gǎn jué|Cảm giác", "睡覺|shuì jiào|Ngủ"],
-            "得": ["de / dé", "Đắc (Trợ từ)", "我覺得... (Tôi cảm thấy...)", "覺得|jué de|Cảm thấy", "得到|dé dào|Nhận được", "得意|dé yì|Đắc ý"],
-            "聽": ["tīng", "Thính (Nghe)", "喜歡聽音樂 (Thích nghe nhạc)", "聽音樂|tīng yīn yuè|Nghe nhạc", "聽說|tīng shuō|Nghe nói", "好聽|hǎo tīng|Hay"],
-            "音": ["yīn", "Âm", "喜歡聽音樂 (Thích nghe nhạc)", "音樂|yīn yuè|Âm nhạc", "發音|fā yīn|Phát âm", "聲音|shēng yīn|Âm thanh"],
-            "樂": ["yuè / lè", "Nhạc / Vui", "喜歡聽音樂 (Thích nghe nhạc)", "音樂|yīn yuè|Âm nhạc", "快樂|kuài lè|Vui vẻ", "樂觀|lè guān|Lạc quan"],
-            "學": ["xué", "Học", "我也學中文 (Tôi cũng học tiếng Trung)", "學習|xué xí|Học tập", "學校|xué xiào|Trường học", "學生|xué shēng|Học sinh"],
-            "晚": ["wǎn", "Vãn (Tối)", "今天晚上 (Tối hôm nay)", "晚上|wǎn shàng|Buổi tối", "晚安|wǎn ān|Chúc ngủ ngon", "晚飯|wǎn fàn|Bữa tối"],
-            "電": ["diàn", "Điện", "想去看電影 (Muốn đi xem phim)", "電影|diàn yǐng|Phim ảnh", "電視|diàn shì|Tivi", "電話|diàn huà|Điện thoại"],
-            "影": ["yǐng", "Ảnh (Phim)", "想去看電影 (Muốn đi xem phim)", "電影|diàn yǐng|Phim ảnh", "影響|yǐng xiǎng|Ảnh hưởng", "影子|yǐng zi|Cái bóng"],
-            "怎": ["zěn", "Chẩm (Thế nào)", "怎麼演啊？ (Diễn thế nào vậy?)", "怎麼|zěn me|Thế nào", "怎麼樣|zěn me yàng|Ra sao", "怎麼辦|zěn me bàn|Làm sao đây"],
-            "演": ["yǎn", "Diễn", "怎麼演啊？ (Diễn thế nào vậy?)", "表演|biǎo yǎn|Biểu diễn", "演戲|yǎn xì|Đóng kịch", "演員|yǎn yuán|Diễn viên"],
-            "啊": ["a", "A (Trợ từ)", "怎麼演啊？ (Diễn thế nào vậy?)", "好啊|hǎo a|Được nha", "對啊|duì a|Đúng rồi", "走啊|zǒu a|Đi thôi"],
-            "吧": ["ba", "Ba (Nhé, đi)", "我們照相吧！ (Chúng ta chụp ảnh nhé!)", "走吧|zǒu ba|Đi thôi", "好吧|hǎo ba|Được thôi", "對吧|duì ba|Đúng chứ"],
-            "吃": ["chī", "Cật (Ăn)", "先吃晚飯 (Ăn tối trước)", "吃飯|chī fàn|Ăn cơm", "好吃|hǎo chī|Ngon", "吃飽|chī bǎo|Ăn no"],
-            "飯": ["fàn", "Phạn (Cơm)", "先吃晚飯 (Ăn tối trước)", "晚飯|wǎn fàn|Bữa tối", "吃飯|chī fàn|Ăn cơm", "早飯|zǎo fàn|Bữa sáng"],
-            "越": ["yuè", "Việt", "越南菜 (Món Việt Nam)", "越南|yuè nán|Việt Nam", "越來越|yuè lái yuè|Ngày càng", "超越|chāo yuè|Vượt qua"],
-            "南": ["nán", "Nam", "越南菜 (Món Việt Nam)", "越南|yuè nán|Việt Nam", "南方|nán fāng|Phương Nam", "南北|nán běi|Nam Bắc"],
-            "菜": ["cài", "Thái (Rau, món)", "越南菜 (Món Việt Nam)", "做菜|zuò cài|Nấu ăn", "蔬菜|shū cài|Rau củ", "點菜|diǎn cài|Gọi món"],
-            "數": ["shù / shǔ", "Số / Đếm", "數字練習 (Luyện tập chữ số)", "數字|shù zì|Chữ số", "數學|shù xué|Toán học", "多數|duō shù|Đa số"],
-            "字": ["zì", "Tự (Chữ)", "數字練習 (Luyện tập chữ số)", "寫字|xiě zì|Viết chữ", "漢字|hàn zì|Chữ Hán", "名字|míng zì|Tên"],
-            "練": ["liàn", "Luyện", "數字練習 (Luyện tập chữ số)", "練習|liàn xí|Luyện tập", "教練|jiào liàn|Huấn luyện viên", "熟練|shú liàn|Thành thạo"],
-            "習": ["xí", "Tập", "數字練習 (Luyện tập chữ số)", "練習|liàn xí|Luyện tập", "學習|xué xí|Học tập", "習慣|xí guàn|Thói quen"],
-            "結": ["jié", "Kết", "結尾 (Phần cuối)", "結婚|jié hūn|Kết hôn", "結果|jié guǒ|Kết quả", "結束|jié shù|Kết thúc"],
-            "尾": ["wěi", "Vĩ (Đuôi)", "結尾 (Phần cuối)", "結尾|jié wěi|Phần cuối", "尾巴|wěi ba|Cái đuôi", "從頭到尾|cóng tóu dào wěi|Từ đầu đến cuối"],
-            "九": ["jiǔ", "Cửu (Chín)", "九十塊 (Chín mươi tệ)", "九個|jiǔ ge|Chín cái", "九月|jiǔ yuè|Tháng chín", "十九|shí jiǔ|Mười chín"],
-            "十": ["shí", "Thập (Mười)", "九十塊 (Chín mươi tệ)", "十分|shí fēn|Mười phần", "十月|shí yuè|Tháng mười", "十足|shí zú|Đầy đủ"],
-            "四": ["sì", "Tứ (Bốn)", "四十五塊 (Bốn mươi lăm tệ)", "四個|sì ge|Bốn cái", "星期四|xīng qī sì|Thứ năm", "四月|sì yuè|Tháng tư"],
-            "零": ["líng", "Linh (Không)", "八十萬零三十五塊 (800,035 tệ)", "零食|líng shí|Đồ ăn vặt", "零錢|líng qián|Tiền lẻ", "零度|líng dù|Không độ"],
-            "七": ["qī", "Thất (Bảy)", "七、八、九 (7, 8, 9)", "七個|qī ge|Bảy cái", "星期天|xīng qī tiān|Chủ nhật", "七月|qī yuè|Tháng bảy"],
-            "神": ["shén", "Thần", "喝神麼？ (Uống gì?) (Cách viết vui/sai của 什麼)", "神仙|shén xiān|Thần tiên", "精神|jīng shén|Tinh thần", "神秘|shén mì|Thần bí"],
-            "白": ["bái", "Bạch (Trắng/Họ)", "白茹玉 (Bạch Như Ngọc)", "白天|bái tiān|Ban ngày", "明白|míng bái|Hiểu rõ", "空白|kòng bái|Trống không"],
-            "打": ["dǎ", "Đả (Đánh, chơi)", "喜歡打籃球 (Thích chơi bóng rổ)", "打電話|dǎ diàn huà|Gọi điện thoại", "打開|dǎ kāi|Mở ra", "打算|dǎ suàn|Dự định"],
-            // CÁC TỪ MỚI ĐƯỢC BỔ SUNG
-            "小": ["xiǎo", "Tiểu (Nhỏ)", "陳月美小姐 (Cô Trần Nguyệt Mỹ)", "小姐|xiǎo jiě|Cô, tiểu thư", "小孩|xiǎo hái|Trẻ con", "小心|xiǎo xīn|Cẩn thận"],
-            "與": ["yǔ", "Dữ (Và, với)", "歡迎與喝茶 (Chào mừng và uống trà)", "參與|cān yù|Tham gia", "給與|jǐ yǔ|Cung cấp, cho", "與其|yǔ qí|Thay vì"],
-            "沒": ["méi", "Một (Không có)", "我沒有喝茶 (Tôi không uống trà)", "沒有|méi yǒu|Không có", "沒關係|méi guān xì|Không sao", "沒錯|méi cuò|Không sai"],
-            "部": ["bù", "Bộ (Lượng từ, bộ phận)", "兩部中文書 (Hai cuốn sách tiếng Trung)", "部分|bù fèn|Bộ phận", "部門|bù mén|Phòng ban", "全部|quán bù|Toàn bộ"],
-            "二": ["èr", "Nhị (Hai)", "一、二、三 (1, 2, 3)", "二十|èr shí|Hai mươi", "第二|dì èr|Thứ hai", "二手|èr shǒu|Đồ cũ"],
-            "相": ["xiàng", "Tướng (Ảnh)", "我們照相吧 (Chúng ta chụp ảnh đi)", "照相|zhào xiàng|Chụp ảnh", "相機|xiàng jī|Máy ảnh", "相片|xiàng piàn|Bức ảnh"],
-            "愛": ["ài", "Ái (Yêu)", "愛好 (Sở thích)", "愛好|ài hào|Sở thích", "可愛|kě ài|Đáng yêu", "愛情|ài qíng|Tình yêu"],
-            "文": ["wén", "Văn", "中文書 (Sách tiếng Trung)", "中文|zhōng wén|Tiếng Trung", "文章|wén zhāng|Bài văn", "文化|wén huà|Văn hóa"]
+            "這": ["zhè", "Đây, này", "這房子很漂亮", "這個|zhè ge|Cái này", "這裡|zhè lǐ|Ở đây", "這樣|zhè yàng|Như thế này"],
+            "是": ["shì", "Là, vâng", "這房子是我家", "是的|shì de|Đúng vậy", "但是|dàn shì|Nhưng mà", "是否|shì fǒu|Có phải không"],
+            "一": ["yī", "Một", "一、二、三", "一起|yì qǐ|Cùng nhau", "一半|yí bàn|Một nửa", "一定|yí dìng|Nhất định"],
+            "篇": ["piān", "Bài", "這是一篇閱讀測驗", "篇幅|piān fú|Độ dài", "長篇|cháng piān|Bài dài", "短篇|duǎn piān|Truyện ngắn"],
+            "為": ["wèi", "Vì, cho", "為您量身打造", "因為|yīn wèi|Bởi vì", "為了|wèi le|Để, vì", "以為|yǐ wéi|Cho rằng"],
+            "您": ["nín", "Ngài, bạn", "您好", "您好|nín hǎo|Xin chào", "您們|nín men|Các ngài", "您早|nín zǎo|Chào sớm"],
+            "的": ["de", "Của", "我的家人", "真的|zhēn de|Thật sự", "目的|mù dì|Mục đích", "你的|nǐ de|Của bạn"],
+            "有": ["yǒu", "Có", "有房子", "沒有|méi yǒu|Không có", "有趣|yǒu qù|Thú vị", "有名|yǒu míng|Nổi tiếng"],
+            "房": ["fáng", "Phòng, nhà", "房子", "房間|fáng jiān|Căn phòng", "房東|fáng dōng|Chủ nhà", "書房|shū fáng|Phòng sách"],
+            "子": ["zi", "Tử (hậu tố)", "房子", "孩子|hái zi|Đứa trẻ", "桌子|zhuō zi|Cái bàn", "椅子|yǐ zi|Cái ghế"],
+            "很": ["hěn", "Rất", "很漂亮", "很好|hěn hǎo|Rất tốt", "很多|hěn duō|Rất nhiều", "很高|hěn gāo|Rất cao"],
+            "漂": ["piào", "Đẹp", "很漂亮", "漂亮|piào liàng|Xinh đẹp", "漂浮|piāo fú|Trôi nổi", "漂流|piāo liú|Trôi dạt"],
+            "亮": ["liàng", "Sáng", "很漂亮", "明亮|míng liàng|Sáng sủa", "月亮|yuè liàng|Mặt trăng", "天亮|tiān liàng|Trời sáng"],
+            "美": ["měi", "Đẹp", "很美", "美國|měi guó|Nước Mỹ", "美味|měi wèi|Thơm ngon", "美女|měi nǚ|Mỹ nữ"],
+            "都": ["dōu", "Đều", "都很好看", "首都|shǒu dū|Thủ đô", "都市|dū shì|Đô thị", "全都|quán dōu|Tất cả"],
+            "來": ["lái", "Đến", "明天來", "回來|huí lái|Trở về", "起來|qǐ lái|Đứng lên", "未來|wèi lái|Tương lai"],
+            "家": ["jiā", "Nhà", "這是我家", "家庭|jiā tíng|Gia đình", "國家|guó jiā|Quốc gia", "大家|dà jiā|Mọi người"],
+            "歡": ["huān", "Vui", "歡迎", "喜歡|xǐ huān|Thích", "歡樂|huān lè|Vui vẻ", "狂歡|kuáng huān|Cuồng hoan"],
+            "迎": ["yíng", "Đón", "歡迎", "迎接|yíng jiē|Đón tiếp", "迎面|yíng miàn|Trước mặt", "迎風|yíng fēng|Đón gió"],
+            "請": ["qǐng", "Mời", "請進", "請問|qǐng wèn|Xin hỏi", "請客|qǐng kè|Mời khách", "申請|shēn qǐng|Xin phép"],
+            "進": ["jìn", "Vào", "請進", "進來|jìn lái|Vào đây", "進步|jìn bù|Tiến bộ", "進入|jìn rù|Đi vào"],
+            "坐": ["zuò", "Ngồi", "請坐", "坐下|zuò xià|Ngồi xuống", "坐車|zuò chē|Ngồi xe", "請坐|qǐng zuò|Mời ngồi"],
+            "謝": ["xiè", "Cảm ơn", "謝謝", "感謝|gǎn xiè|Cảm tạ", "道謝|dào xiè|Nói cảm ơn", "凋謝|diāo xiè|Khô héo"],
+            "你": ["nǐ", "Bạn", "你好", "你好|nǐ hǎo|Xin chào", "你們|nǐ men|Các bạn", "你的|nǐ de|Của bạn"],
+            "們": ["men", "Hậu tố số nhiều", "你們好", "我們|wǒ men|Chúng tôi", "他們|tā men|Họ", "人們|rén men|Mọi người"],
+            "好": ["hǎo", "Tốt", "很好看", "好像|hǎo xiàng|Hình như", "好吃|hǎo chī|Ngon", "好人|hǎo rén|Người tốt"],
+            "看": ["kàn", "Nhìn", "很好看", "看見|kàn jiàn|Nhìn thấy", "看書|kàn shū|Đọc sách", "好看|hǎo kàn|Đẹp, hay"],
+            "問": ["wèn", "Hỏi", "請問", "問題|wèn tí|Vấn đề", "訪問|fǎng wèn|Thăm hỏi", "學問|xué wèn|Học vấn"],
+            "照": ["zhào", "Chiếu", "照片", "照顧|zhào gù|Chăm sóc", "護照|hù zhào|Hộ chiếu", "照相|zhào xiàng|Chụp ảnh"],
+            "片": ["piàn", "Tấm/Mảnh", "照片", "名片|míng piàn|Danh thiếp", "卡片|kǎ piàn|Tấm thiệp", "片面|piàn miàn|Phiến diện"],
+            "嗎": ["ma", "Không", "是嗎？", "好嗎|hǎo ma|Được không", "對嗎|duì ma|Đúng không", "去嗎|qù ma|Đi không"],
+            "我": ["wǒ", "Tôi", "我是美國人", "我們|wǒ men|Chúng ta", "自我|zì wǒ|Tự bản thân", "我的|wǒ de|Của tôi"],
+            "人": ["rén", "Người", "很多人", "男人|nán rén|Đàn ông", "女人|nǚ rén|Phụ nữ", "別人|bié rén|Người khác"],
+            "誰": ["shéi", "Ai", "這是誰", "是誰|shì shéi|Là ai", "誰的|shéi de|Của ai", "誰知道|shéi zhī dào|Ai biết"],
+            "呢": ["ne", "Nhỉ", "馬先生呢？", "你呢|nǐ ne|Còn bạn", "人呢|rén ne|Người đâu", "怎麼呢|zěn me ne|Làm sao nhỉ"],
+            "爸": ["bà", "Ba", "爸爸", "爸爸|bà ba|Bố", "老爸|lǎo bà|Ông già", "爸媽|bà mā|Bố mẹ"],
+            "媽": ["mā", "Mẹ", "媽媽", "媽媽|mā ma|Mẹ", "大媽|dà mā|Bác gái", "老媽|lǎo mā|Bà già"],
+            "姐": ["jiě", "Chị", "姐姐", "姐姐|jiě jie|Chị gái", "小姐|xiǎo jiě|Cô gái", "姐妹|jiě mèi|Chị em"],
+            "妹": ["mèi", "Em gái", "妹妹", "妹妹|mèi mei|Em gái", "姐妹|jiě mèi|Chị em", "表妹|biǎo mèi|Em họ"],
+            "六": ["liù", "Sáu", "六人", "星期六|xīng qī liù|Thứ bảy", "六月|liù yuè|Tháng sáu", "六十|liù shí|Sáu mươi"],
+            "先": ["xiān", "Trước", "馬先生", "先生|xiān shēng|Ngài, anh", "首先|shǒu xiān|Đầu tiên", "先後|xiān hòu|Trước sau"],
+            "生": ["shēng", "Sinh", "馬先生", "生活|shēng huó|Cuộc sống", "生日|shēng rì|Sinh nhật", "學生|xué shēng|Học sinh"],
+            "哪": ["nǎ", "Nào", "哪國人", "哪裡|nǎ lǐ|Ở đâu", "哪個|nǎ ge|Cái nào", "哪怕|nǎ pà|Cho dù"],
+            "國": ["guó", "Quốc", "哪國人", "國家|guó jiā|Quốc gia", "國外|guó wài|Nước ngoài", "國際|guó jì|Quốc tế"],
+            "姓": ["xìng", "Họ", "您姓什麼", "姓名|xìng míng|Họ tên", "百姓|bǎi xìng|Bách tính", "貴姓|guì xìng|Quý danh"],
+            "什": ["shén", "Gì", "什麼", "什麼|shén me|Cái gì", "為什麼|wèi shén me|Tại sao", "憑什麼|píng shén me|Dựa vào gì"],
+            "麼": ["me", "Gì", "什麼", "什麼|shén me|Cái gì", "怎麼|zěn me|Thế nào", "這麼|zhè me|Như thế này"],
+            "叫": ["jiào", "Gọi", "名字叫", "叫聲|jiào shēng|Tiếng kêu", "大叫|dà jiào|Kêu to", "叫做|jiào zuò|Gọi là"],
+            "日": ["rì", "Nhật", "日本人", "日本|rì běn|Nhật Bản", "日記|rì jì|Nhật ký", "節日|jié rì|Ngày lễ"],
+            "本": ["běn", "Bản", "日本人", "書本|shū běn|Sách", "本來|běn lái|Vốn dĩ", "根本|gēn běn|Căn bản"],
+            "台": ["tái", "Đài", "台灣人", "台灣|tái wān|Đài Loan", "台北|tái běi|Đài Bắc", "上台|shàng tái|Lên đài"],
+            "灣": ["wān", "Loan", "台灣人", "海灣|hǎi wān|Vịnh biển", "台灣|tái wān|Đài Loan", "轉灣|zhuǎn wān|Rẽ"],
+            "要": ["yào", "Muốn/Phải", "您要喝茶嗎", "需要|xū yào|Cần thiết", "要求|yāo qiú|Yêu cầu", "重要|zhòng yào|Quan trọng"],
+            "喝": ["hē", "Uống", "要喝什麼", "喝水|hē shuǐ|Uống nước", "好喝|hǎo hē|Ngon", "喝醉|hē zuì|Uống say"],
+            "茶": ["chá", "Trà", "要茶", "奶茶|nǎi chá|Trà sữa", "茶葉|chá yè|Lá trà", "喝茶|hē chá|Uống trà"],
+            "咖": ["kā", "Cà", "咖啡", "咖啡|kā fēi|Cà phê", "咖哩|gā lǐ|Cà ri", "咖啡館|kā fēi guǎn|Quán cafe"],
+            "啡": ["fēi", "Phê", "咖啡", "咖啡|kā fēi|Cà phê", "咖啡色|kā fēi sè|Màu nâu cafe", "黑咖啡|hēi kā fēi|Cafe đen"],
+            "喜": ["xǐ", "Thích/Vui", "我喜歡", "喜歡|xǐ huān|Thích", "喜劇|xǐ jù|Hài kịch", "恭喜|gōng xǐ|Chúc mừng"],
+            "烏": ["wū", "Đen", "烏龍茶", "烏黑|wū hēi|Đen nhánh", "烏鴉|wū yā|Con quạ", "烏雲|wū yún|Mây đen"],
+            "龍": ["lóng", "Rồng", "烏龍茶", "恐龍|kǒng lóng|Khủng long", "龍頭|lóng tóu|Vòi nước", "神龍|shén lóng|Thần long"],
+            "對": ["duì", "Đúng", "對不起", "對不起|duì bù qǐ|Xin lỗi", "對面|duì miàn|Đối diện", "對話|duì huà|Đối thoại"],
+            "不": ["bù", "Không", "對不起", "不是|bú shì|Không phải", "不行|bù xíng|Không được", "不錯|bú cuò|Không tồi"],
+            "起": ["qǐ", "Dậy/Lên", "對不起", "起來|qǐ lái|Đứng lên", "起床|qǐ chuáng|Ngủ dậy", "起飛|qǐ fēi|Cất cánh"],
+            "去": ["qù", "Đi", "我去接伯母", "去年|qù nián|Năm ngoái", "過去|guò qù|Quá khứ", "回去|huí qù|Trở về"],
+            "接": ["jiē", "Đón/Nhận", "去接家人", "接受|jiē shòu|Chấp nhận", "接著|jiē zhe|Tiếp theo", "迎接|yíng jiē|Đón tiếp"],
+            "老": ["lǎo", "Già", "李老師", "老師|lǎo shī|Giáo viên", "老人|lǎo rén|Người già", "老婆|lǎo pó|Vợ"],
+            "師": ["shī", "Thầy", "李老師", "老師|lǎo shī|Giáo viên", "律師|lǜ shī|Luật sư", "醫師|yī shī|Bác sĩ"],
+            "三": ["sān", "Ba", "三十五塊", "三個|sān ge|Ba cái", "星期三|xīng qī sān|Thứ tư", "三明治|sān míng zhì|Sandwich"],
+            "萬": ["wàn", "Mười nghìn", "八十萬", "一萬|yí wàn|Mười nghìn", "千萬|qiān wàn|Nhất thiết", "萬歲|wàn suì|Vạn tuế"],
+            "塊": ["kuài", "Tệ/Cục", "四十五塊", "一塊|yí kuài|Một tệ/cục", "冰塊|bīng kuài|Cục đá", "方塊|fāng kuài|Khối vuông"],
+            "五": ["wǔ", "Năm", "四十五塊", "五個|wǔ ge|Năm cái", "星期五|xīng qī wǔ|Thứ sáu", "五月|wǔ yuè|Tháng năm"],
+            "八": ["bā", "Tám", "八十萬", "八個|bā ge|Tám cái", "星期八|xīng qī bā|Ngày nghỉ", "八月|bā yuè|Tháng tám"],
+            "多": ["duō", "Nhiều", "很多人", "多少|duō shǎo|Bao nhiêu", "很多|hěn duō|Rất nhiều", "多數|duō shù|Đa số"],
+            "她": ["tā", "Cô ấy", "她名字叫", "她們|tā men|Các cô ấy", "她的|tā de|Của cô ấy", "她自己|tā zì jǐ|Chính cô ấy"],
+            "名": ["míng", "Tên", "名字", "名字|míng zì|Tên", "有名|yǒu míng|Nổi tiếng", "名片|míng piàn|Danh thiếp"],
+            "臺": ["tái", "Đài", "臺北", "臺北|tái běi|Đài Bắc", "臺灣|tái wān|Đài Loan", "舞臺|wǔ tái|Sân khấu"],
+            "北": ["běi", "Bắc", "臺北", "北京|běi jīng|Bắc Kinh", "北方|běi fāng|Phương Bắc", "南北|nán běi|Nam Bắc"],
+            "週": ["zhōu", "Tuần", "週末", "週末|zhōu mò|Cuối tuần", "週年|zhōu nián|Kỷ niệm", "每週|měi zhōu|Mỗi tuần"],
+            "末": ["mò", "Cuối", "週末", "週末|zhōu mò|Cuối tuần", "期末|qī mò|Cuối kỳ", "末日|mò rì|Tận thế"],
+            "聚": ["jù", "Tụ tập", "聚會", "聚會|jù huì|Tụ tập", "聚餐|jù cān|Ăn uống", "團聚|tuán jù|Đoàn tụ"],
+            "會": ["huì", "Hội", "聚會", "聚會|jù huì|Tụ tập", "開會|kāi huì|Họp", "會說|huì shuō|Biết nói"],
+            "場": ["chǎng", "Cảnh", "場景", "場景|chǎng jǐng|Bối cảnh", "操場|cāo chǎng|Sân", "廣場|guǎng chǎng|Quảng trường"],
+            "景": ["jǐng", "Cảnh", "場景", "風景|fēng jǐng|Phong cảnh", "場景|chǎng jǐng|Bối cảnh", "夜景|yè jǐng|Cảnh đêm"],
+            "今": ["jīn", "Nay", "今天", "今天|jīn tiān|Hôm nay", "今年|jīn nián|Năm nay", "今晚|jīn wǎn|Tối nay"],
+            "天": ["tiān", "Trời", "今天", "天氣|tiān qì|Thời tiết", "每天|měi tiān|Mỗi ngày", "天空|tiān kōng|Bầu trời"],
+            "氣": ["qì", "Khí", "天氣", "天氣|tiān qì|Thời tiết", "客氣|kè qì|Khách sáo", "生氣|shēng qì|Tức giận"],
+            "茹": ["rú", "Như", "白茹玉", "茹素|rú sù|Ăn chay", "茹玉|rú yù|Như Ngọc", "含辛茹苦|hán xīn rú kǔ|Chịu khổ"],
+            "玉": ["yù", "Ngọc", "白茹玉", "玉佩|yù pèi|Ngọc bội", "玉米|yù mǐ|Ngô/Bắp", "寶玉|bǎo yù|Bảo ngọc"],
+            "玩": ["wán", "Chơi", "好玩", "好玩|hǎo wán|Vui, hay", "玩具|wán jù|Đồ chơi", "開玩笑|kāi wán xiào|Nói đùa"],
+            "早": ["zǎo", "Sớm", "早上", "早上|zǎo shàng|Buổi sáng", "早安|zǎo ān|Chào sáng", "提早|tí zǎo|Làm sớm"],
+            "上": ["shàng", "Trên", "早上", "早上|zǎo shàng|Buổi sáng", "上班|shàng bān|Đi làm", "上課|shàng kè|Vào học"],
+            "田": ["tián", "Điền", "田中", "水田|shuǐ tián|Ruộng nước", "種田|zhòng tián|Trồng trọt", "田地|tián dì|Đất đai"],
+            "中": ["zhōng", "Trung", "田中", "中文|zhōng wén|Tiếng Trung", "中午|zhōng wǔ|Buổi trưa", "中間|zhōng jiān|Ở giữa"],
+            "誠": ["chéng", "Thành", "田中誠一", "誠實|chéng shí|Thành thật", "真誠|zhēn chéng|Chân thành", "誠心|chéng xīn|Thành tâm"],
+            "也": ["yě", "Cũng", "我也", "也是|yě shì|Cũng là", "也許|yě xǔ|Có lẽ", "也好|yě hǎo|Cũng tốt"],
+            "想": ["xiǎng", "Muốn", "想喝", "想念|xiǎng niàn|Nhớ", "想法|xiǎng fǎ|Suy nghĩ", "想要|xiǎng yào|Muốn"],
+            "還": ["hái", "Còn", "還是", "還是|hái shì|Hay là", "還有|hái yǒu|Vẫn còn", "還沒|hái méi|Chưa"],
+            "客": ["kè", "Khách", "不客氣", "客氣|kè qì|Khách sáo", "客人|kè rén|Khách", "請客|qǐng kè|Mời khách"],
+            "兩": ["liǎng", "Hai", "兩部", "兩個|liǎng ge|Hai cái", "兩天|liǎng tiān|Hai ngày", "兩次|liǎng cì|Hai lần"],
+            "書": ["shū", "Sách", "中文書", "看書|kàn shū|Đọc sách", "圖書館|tú shū guǎn|Thư viện", "書法|shū fǎ|Thư pháp"],
+            "哥": ["gē", "Anh", "哥哥", "哥哥|gē ge|Anh trai", "大哥|dà gē|Đại ca", "表哥|biǎo gē|Anh họ"],
+            "幾": ["jǐ", "Mấy", "幾兄弟", "幾個|jǐ ge|Mấy cái", "幾天|jǐ tiān|Mấy ngày", "幾歲|jǐ suì|Mấy tuổi"],
+            "兄": ["xiōng", "Huynh", "兄弟", "兄弟|xiōng dì|Anh em", "兄長|xiōng zhǎng|Huynh trưởng", "兄弟姐妹|xiōng dì jiě mèi|Anh chị em"],
+            "弟": ["dì", "Đệ", "兄弟", "弟弟|dì di|Em trai", "兄弟|xiōng dì|Anh em", "徒弟|tú dì|Đồ đệ"],
+            "伯": ["bó", "Bác", "伯母", "伯母|bó mǔ|Bác gái", "伯父|bó fù|Bác trai", "大伯|dà bó|Bác cả"],
+            "母": ["mǔ", "Mẫu", "伯母", "母親|mǔ qīn|Mẹ", "伯母|bó mǔ|Bác gái", "母語|mǔ yǔ|Tiếng mẹ đẻ"],
+            "可": ["kě", "Khả", "可以", "可以|kě yǐ|Có thể", "可愛|kě ài|Đáng yêu", "可是|kě shì|Nhưng mà"],
+            "以": ["yǐ", "Dĩ", "可以", "可以|kě yǐ|Có thể", "所以|suǒ yǐ|Cho nên", "以為|yǐ wéi|Cho rằng"],
+            "新": ["xīn", "Mới", "新朋友", "新年|xīn nián|Năm mới", "新聞|xīn wén|Tin tức", "新鮮|xīn xiān|Tươi"],
+            "朋": ["péng", "Bạn", "新朋友", "朋友|péng yǒu|Bạn bè", "男朋友|nán péng yǒu|Bạn trai", "女朋友|nǚ péng yǒu|Bạn gái"],
+            "友": ["yǒu", "Bạn", "新朋友", "朋友|péng yǒu|Bạn bè", "友好|yǒu hǎo|Hữu nghị", "網友|wǎng yǒu|Bạn mạng"],
+            "籍": ["jí", "Tịch", "國籍", "國籍|guó jí|Quốc tịch", "書籍|shū jí|Sách vở", "戶籍|hù jí|Hộ khẩu"],
+            "常": ["cháng", "Thường", "常做", "常常|cháng cháng|Thường xuyên", "平常|píng cháng|Bình thường", "非常|fēi cháng|Vô cùng"],
+            "做": ["zuò", "Làm", "做什麼", "做事|zuò shì|Làm việc", "做飯|zuò fàn|Nấu cơm", "叫做|jiào zuò|Gọi là"],
+            "運": ["yùn", "Vận", "運動", "運動|yùn dòng|Thể thao", "運氣|yùn qì|May mắn", "運輸|yùn shū|Vận chuyển"],
+            "動": ["dòng", "Động", "運動", "運動|yùn dòng|Thể thao", "動物|dòng wù|Động vật", "感動|gǎn dòng|Cảm động"],
+            "球": ["qiú", "Bóng", "打球", "打球|dǎ qiú|Đánh bóng", "足球|zú qiú|Bóng đá", "地球|dì qiú|Trái đất"],
+            "網": ["wǎng", "Lưới", "網球", "網球|wǎng qiú|Tennis", "上網|shàng wǎng|Lên mạng", "網路|wǎng lù|Mạng"],
+            "棒": ["bàng", "Gậy", "棒球", "棒球|bàng qiú|Bóng chày", "很棒|hěn bàng|Rất tuyệt", "冰棒|bīng bàng|Kem que"],
+            "籃": ["lán", "Rổ", "籃球", "籃球|lán qiú|Bóng rổ", "花籃|huā lán|Giỏ hoa", "搖籃|yáo lán|Nôi"],
+            "游": ["yóu", "Bơi", "游泳", "游泳|yóu yǒng|Bơi lội", "遊戲|yóu xì|Trò chơi", "旅遊|lǚ yóu|Du lịch"],
+            "泳": ["yǒng", "Bơi", "游泳", "游泳|yóu yǒng|Bơi lội", "泳衣|yǒng yī|Đồ bơi", "泳池|yǒng chí|Hồ bơi"],
+            "踢": ["tī", "Đá", "踢足球", "踢足球|tī zú qiú|Đá bóng", "踢開|tī kāi|Đá văng", "踢毽子|tī jiàn zi|Đá cầu"],
+            "足": ["zú", "Chân", "足球", "足球|zú qiú|Bóng đá", "足夠|zú gòu|Đủ", "滿足|mǎn zú|Thỏa mãn"],
+            "覺": ["jué", "Giác", "覺得", "覺得|jué de|Cảm thấy", "感覺|gǎn jué|Cảm giác", "睡覺|shuì jiào|Ngủ"],
+            "得": ["de", "Được", "覺得", "覺得|jué de|Cảm thấy", "得到|dé dào|Nhận được", "得意|dé yì|Đắc ý"],
+            "聽": ["tīng", "Nghe", "聽音樂", "聽音樂|tīng yīn yuè|Nghe nhạc", "聽說|tīng shuō|Nghe nói", "好聽|hǎo tīng|Hay"],
+            "音": ["yīn", "Âm", "音樂", "音樂|yīn yuè|Âm nhạc", "發音|fā yīn|Phát âm", "聲音|shēng yīn|Âm thanh"],
+            "樂": ["yuè", "Nhạc", "音樂", "音樂|yīn yuè|Âm nhạc", "快樂|kuài lè|Vui vẻ", "樂觀|lè guān|Lạc quan"],
+            "學": ["xué", "Học", "學中文", "學習|xué xí|Học tập", "學校|xué xiào|Trường", "學生|xué shēng|Học sinh"],
+            "晚": ["wǎn", "Tối", "晚上", "晚上|wǎn shàng|Buổi tối", "晚安|wǎn ān|Chúc ngủ ngon", "晚飯|wǎn fàn|Bữa tối"],
+            "電": ["diàn", "Điện", "電影", "電影|diàn yǐng|Phim ảnh", "電視|diàn shì|Tivi", "電話|diàn huà|Điện thoại"],
+            "影": ["yǐng", "Ảnh", "電影", "電影|diàn yǐng|Phim ảnh", "影響|yǐng xiǎng|Ảnh hưởng", "影子|yǐng zi|Cái bóng"],
+            "怎": ["zěn", "Sao", "怎麼演", "怎麼|zěn me|Thế nào", "怎麼樣|zěn me yàng|Ra sao", "怎麼辦|zěn me bàn|Làm sao"],
+            "演": ["yǎn", "Diễn", "怎麼演", "表演|biǎo yǎn|Biểu diễn", "演戲|yǎn xì|Đóng kịch", "演員|yǎn yuán|Diễn viên"],
+            "啊": ["a", "A", "怎麼演啊", "好啊|hǎo a|Được nha", "對啊|duì a|Đúng rồi", "走啊|zǒu a|Đi thôi"],
+            "吧": ["ba", "Nhé", "照相吧", "走吧|zǒu ba|Đi thôi", "好吧|hǎo ba|Được thôi", "對吧|duì ba|Đúng chứ"],
+            "吃": ["chī", "Ăn", "吃晚飯", "吃飯|chī fàn|Ăn cơm", "好吃|hǎo chī|Ngon", "吃飽|chī bǎo|Ăn no"],
+            "飯": ["fàn", "Cơm", "晚飯", "晚飯|wǎn fàn|Bữa tối", "吃飯|chī fàn|Ăn cơm", "早飯|zǎo fàn|Bữa sáng"],
+            "越": ["yuè", "Việt", "越南菜", "越南|yuè nán|Việt Nam", "越來越|yuè lái yuè|Ngày càng", "超越|chāo yuè|Vượt qua"],
+            "南": ["nán", "Nam", "越南", "越南|yuè nán|Việt Nam", "南方|nán fāng|Phương Nam", "南北|nán běi|Nam Bắc"],
+            "菜": ["cài", "Rau/Món", "越南菜", "做菜|zuò cài|Nấu ăn", "蔬菜|shū cài|Rau củ", "點菜|diǎn cài|Gọi món"],
+            "數": ["shù", "Số", "數字", "數字|shù zì|Chữ số", "數學|shù xué|Toán học", "多數|duō shù|Đa số"],
+            "字": ["zì", "Chữ", "數字", "寫字|xiě zì|Viết chữ", "漢字|hàn zì|Chữ Hán", "名字|míng zì|Tên"],
+            "練": ["liàn", "Luyện", "練習", "練習|liàn xí|Luyện tập", "教練|jiào liàn|Huấn luyện viên", "熟練|shú liàn|Thành thạo"],
+            "習": ["xí", "Tập", "練習", "練習|liàn xí|Luyện tập", "學習|xué xí|Học tập", "習慣|xí guàn|Thói quen"],
+            "結": ["jié", "Kết", "結尾", "結婚|jié hūn|Kết hôn", "結果|jié guǒ|Kết quả", "結束|jié shù|Kết thúc"],
+            "尾": ["wěi", "Đuôi", "結尾", "結尾|jié wěi|Phần cuối", "尾巴|wěi ba|Cái đuôi", "從頭到尾|cóng tóu dào wěi|Từ đầu đến cuối"],
+            "九": ["jiǔ", "Chín", "九十", "九個|jiǔ ge|Chín cái", "九月|jiǔ yuè|Tháng chín", "十九|shí jiǔ|Mười chín"],
+            "十": ["shí", "Mười", "九十", "十分|shí fēn|Mười phần", "十月|shí yuè|Tháng mười", "十足|shí zú|Đầy đủ"],
+            "四": ["sì", "Bốn", "四十五", "四個|sì ge|Bốn cái", "星期四|xīng qī sì|Thứ năm", "四月|sì yuè|Tháng tư"],
+            "零": ["líng", "Không", "八十萬零", "零食|líng shí|Đồ ăn vặt", "零錢|líng qián|Tiền lẻ", "零度|líng dù|Không độ"],
+            "七": ["qī", "Bảy", "七", "七個|qī ge|Bảy cái", "星期天|xīng qī tiān|Chủ nhật", "七月|qī yuè|Tháng bảy"],
+            "神": ["shén", "Thần", "神麼", "神仙|shén xiān|Thần tiên", "精神|jīng shén|Tinh thần", "神秘|shén mì|Thần bí"],
+            "白": ["bái", "Trắng", "白茹玉", "白天|bái tiān|Ban ngày", "明白|míng bái|Hiểu rõ", "空白|kòng bái|Trống không"],
+            "打": ["dǎ", "Đánh", "打球", "打電話|dǎ diàn huà|Gọi điện", "打開|dǎ kāi|Mở ra", "打算|dǎ suàn|Dự định"],
+            "小": ["xiǎo", "Nhỏ", "小姐", "小姐|xiǎo jiě|Cô", "小孩|xiǎo hái|Trẻ con", "小心|xiǎo xīn|Cẩn thận"],
+            "與": ["yǔ", "Và", "歡迎與喝茶", "參與|cān yù|Tham gia", "給與|jǐ yǔ|Cung cấp", "與其|yǔ qí|Thay vì"],
+            "沒": ["méi", "Không", "沒有", "沒有|méi yǒu|Không có", "沒關係|méi guān xì|Không sao", "沒錯|méi cuò|Không sai"],
+            "部": ["bù", "Bộ", "兩部", "部分|bù fèn|Bộ phận", "部門|bù mén|Phòng ban", "全部|quán bù|Toàn bộ"],
+            "二": ["èr", "Hai", "一、二", "二十|èr shí|Hai mươi", "第二|dì èr|Thứ hai", "二手|èr shǒu|Đồ cũ"],
+            "相": ["xiàng", "Ảnh", "照相", "照相|zhào xiàng|Chụp ảnh", "相機|xiàng jī|Máy ảnh", "相片|xiàng piàn|Bức ảnh"],
+            "愛": ["ài", "Yêu", "愛好", "愛好|ài hào|Sở thích", "可愛|kě ài|Đáng yêu", "愛情|ài qíng|Tình yêu"],
+            "文": ["wén", "Văn", "中文", "中文|zhōng wén|Tiếng Trung", "文章|wén zhāng|Bài văn", "文化|wén huà|Văn hóa"]
+        };
+
+        // TỪ ĐIỂN CỤM TỪ (COMPOUND DICTIONARY) CHO TÍNH NĂNG HIGHLIGHT
+        const compoundDict = {
+            "週末": { pinyin: "zhōu mò", meaning: "Cuối tuần" },
+            "臺北": { pinyin: "Tái běi", meaning: "Đài Bắc" },
+            "聚會": { pinyin: "jù huì", meaning: "Tụ tập, gặp mặt" },
+            "歡迎": { pinyin: "huān yíng", meaning: "Hoan nghênh, chào mừng" },
+            "天氣": { pinyin: "tiān qì", meaning: "Thời tiết" },
+            "房子": { pinyin: "fáng zi", meaning: "Ngôi nhà" },
+            "漂亮": { pinyin: "piào liàng", meaning: "Xinh đẹp" },
+            "喜歡": { pinyin: "xǐ huān", meaning: "Thích" },
+            "好玩": { pinyin: "hǎo wán", meaning: "Vui, thú vị" },
+            "好看": { pinyin: "hǎo kàn", meaning: "Đẹp, hay (khi xem)" },
+            "明天": { pinyin: "míng tiān", meaning: "Ngày mai" },
+            "早上": { pinyin: "zǎo shàng", meaning: "Buổi sáng" },
+            "老師": { pinyin: "lǎo shī", meaning: "Giáo viên" },
+            "咖啡": { pinyin: "kā fēi", meaning: "Cà phê" },
+            "烏龍茶": { pinyin: "wū lóng chá", meaning: "Trà Ô long" },
+            "對不起": { pinyin: "duì bù qǐ", meaning: "Xin lỗi" },
+            "不客氣": { pinyin: "bú kè qì", meaning: "Đừng khách sáo, không có gì" },
+            "中文": { pinyin: "zhōng wén", meaning: "Tiếng Trung" },
+            "照片": { pinyin: "zhào piàn", meaning: "Bức ảnh" },
+            "爸爸": { pinyin: "bà ba", meaning: "Bố" },
+            "媽媽": { pinyin: "mā ma", meaning: "Mẹ" },
+            "哥哥": { pinyin: "gē ge", meaning: "Anh trai" },
+            "姐姐": { pinyin: "jiě jie", meaning: "Chị gái" },
+            "妹妹": { pinyin: "mèi mei", meaning: "Em gái" },
+            "兄弟": { pinyin: "xiōng dì", meaning: "Anh em trai" },
+            "姐妹": { pinyin: "jiě mèi", meaning: "Chị em gái" },
+            "名字": { pinyin: "míng zì", meaning: "Tên gọi" },
+            "伯母": { pinyin: "bó mǔ", meaning: "Bác gái" },
+            "先生": { pinyin: "xiān shēng", meaning: "Tiên sinh, ông, anh" },
+            "小姐": { pinyin: "xiǎo jiě", meaning: "Tiểu thư, cô" },
+            "什麼": { pinyin: "shén me", meaning: "Cái gì" },
+            "神麼": { pinyin: "shén me", meaning: "Cái gì (Cách viết vui/nhầm của 什麼)" },
+            "日本": { pinyin: "Rì běn", meaning: "Nhật Bản" },
+            "美國": { pinyin: "Měi guó", meaning: "Nước Mỹ" },
+            "台灣": { pinyin: "Tái wān", meaning: "Đài Loan" },
+            "姓名": { pinyin: "xìng míng", meaning: "Họ tên" },
+            "運動": { pinyin: "yùn dòng", meaning: "Thể thao, vận động" },
+            "打球": { pinyin: "dǎ qiú", meaning: "Chơi bóng" },
+            "網球": { pinyin: "wǎng qiú", meaning: "Tennis" },
+            "棒球": { pinyin: "bàng qiú", meaning: "Bóng chày" },
+            "籃球": { pinyin: "lán qiú", meaning: "Bóng rổ" },
+            "游泳": { pinyin: "yóu yǒng", meaning: "Bơi lội" },
+            "足球": { pinyin: "zú qiú", meaning: "Bóng đá" },
+            "覺得": { pinyin: "jué de", meaning: "Cảm thấy" },
+            "一起": { pinyin: "yì qǐ", meaning: "Cùng nhau" },
+            "音樂": { pinyin: "yīn yuè", meaning: "Âm nhạc" },
+            "今天": { pinyin: "jīn tiān", meaning: "Hôm nay" },
+            "晚上": { pinyin: "wǎn shàng", meaning: "Buổi tối" },
+            "電影": { pinyin: "diàn yǐng", meaning: "Phim ảnh" },
+            "晚飯": { pinyin: "wǎn fàn", meaning: "Bữa tối" },
+            "越南": { pinyin: "Yuè nán", meaning: "Việt Nam" },
+            "數字": { pinyin: "shù zì", meaning: "Chữ số" },
+            "練習": { pinyin: "liàn xí", meaning: "Luyện tập" },
+            "結尾": { pinyin: "jié wěi", meaning: "Phần kết" },
+            "照相": { pinyin: "zhào xiàng", meaning: "Chụp ảnh" },
+            "可以": { pinyin: "kě yǐ", meaning: "Có thể" },
+            "你好": { pinyin: "nǐ hǎo", meaning: "Xin chào" },
+            "沒有": { pinyin: "méi yǒu", meaning: "Không có" },
+            "常": { pinyin: "cháng", meaning: "Thường xuyên" }
         };
 
         const dictionary = {};
@@ -357,13 +464,12 @@
             if(data[3]) relWords.push({ word: data[3].split('|')[0], pinyin: data[3].split('|')[1], meaning: data[3].split('|')[2] });
             if(data[4]) relWords.push({ word: data[4].split('|')[0], pinyin: data[4].split('|')[1], meaning: data[4].split('|')[2] });
             if(data[5]) relWords.push({ word: data[5].split('|')[0], pinyin: data[5].split('|')[1], meaning: data[5].split('|')[2] });
-            
             dictionary[char] = { pinyin: data[0], meaning: data[1], usage: data[2], related: relWords };
         }
 
         function getCharInfo(char) {
             if (dictionary[char]) return dictionary[char];
-            return { pinyin: '...', meaning: 'Chưa có thông tin nghĩa cho từ này.', usage: 'Từ này cần được cập nhật thêm vào kho dữ liệu.', related: [ { word: char, pinyin: '', meaning: 'Tra cứu thêm' } ] };
+            return { pinyin: '...', meaning: 'Chưa có thông tin.', usage: 'Chưa cập nhật.', related: [] };
         }
 
         window.storyTextOnly = "";
@@ -380,7 +486,7 @@
                 if (line.startsWith('【') && line.endsWith('】')) {
                     html += '<div class="scene-marker">';
                     for(let char of line) {
-                        if (/[\u4E00-\u9FA5]/.test(char)) html += `<span class="hanzi-char" onclick="openModal('${char}')">${char}</span>`;
+                        if (/[\u4E00-\u9FA5]/.test(char)) html += `<span class="hanzi-char" onclick="openSingleModal('${char}', this)">${char}</span>`;
                         else html += char;
                     }
                     html += '</div>';
@@ -397,13 +503,10 @@
                     if (char === '【' || char === '(' || char === '（') inBracket = true;
                     
                     let isSpoken = !inBracket && !beforeColon;
-                    if(char === '：' && beforeColon) {
-                        isSpoken = false; 
-                        beforeColon = false; 
-                    }
+                    if(char === '：' && beforeColon) { isSpoken = false; beforeColon = false; }
                     
                     let isHanzi = /[\u4E00-\u9FA5]/.test(char);
-                    let clickEvt = isHanzi ? `onclick="openModal('${char}')"` : "";
+                    let clickEvt = isHanzi ? `onclick="openSingleModal('${char}', this)"` : "";
                     let classes = isHanzi ? "hanzi-char" : "";
                     
                     if (isSpoken) {
@@ -416,47 +519,168 @@
                             lineHtml += `<span class="${classes}" ${clickEvt}>${char}</span>`;
                         }
                     }
-                    
                     if (char === '】' || char === ')' || char === '）') inBracket = false;
                 }
                 html += `<div>${lineHtml}</div>`;
-                
-                if(window.storyTextOnly.length > 0 && !window.storyTextOnly.endsWith(' ')) {
-                    window.storyTextOnly += ' '; 
-                }
+                if(window.storyTextOnly.length > 0 && !window.storyTextOnly.endsWith(' ')) window.storyTextOnly += ' '; 
             }
             document.getElementById('text-container').innerHTML = html;
+            
+            // Chạy hàm bôi màu những từ đã có ghi chú sau khi render xong
+            applyUserHighlights();
         }
 
-        let writer; let currentChar = '';
-        function openModal(char) {
-            currentChar = char;
+        let writer; 
+        
+        // MỞ MODAL CHO CHỮ ĐƠN
+        function openSingleModal(char, element) {
             const info = getCharInfo(char);
-            document.getElementById('modal-char').innerText = char;
-            document.getElementById('modal-pinyin').innerText = info.pinyin;
-            document.getElementById('modal-meaning').innerText = info.meaning;
-            document.getElementById('modal-usage').innerText = info.usage;
+            document.getElementById('single-char').innerText = char;
+            document.getElementById('single-pinyin').innerText = info.pinyin;
+            document.getElementById('single-meaning').innerText = info.meaning;
+            document.getElementById('single-usage').innerText = info.usage;
 
             let treeHtml = `<div class="tree-root">${char}</div><div class="tree-branches">`;
             info.related.forEach(item => {
-                treeHtml += `<div class="tree-branch"><div class="branch-header"><span class="branch-word">${item.word}</span><button class="branch-btn-audio" onclick="playWord('${item.word}')" title="Nghe từ này">🔊</button></div><span class="branch-pinyin">${item.pinyin}</span><span class="branch-meaning">${item.meaning}</span></div>`;
+                treeHtml += `<div class="tree-branch"><div class="branch-header"><span class="branch-word">${item.word}</span><button class="branch-btn-audio" onclick="playWord('${item.word}')">🔊</button></div><span class="branch-pinyin">${item.pinyin}</span><span class="branch-meaning">${item.meaning}</span></div>`;
             });
             treeHtml += `</div>`;
             document.getElementById('tree-container').innerHTML = treeHtml;
 
-            document.getElementById('modal').style.display = 'flex';
+            // Kiểm tra xem chữ này có nằm trong cụm từ nào được ghi chú không
+            const noteSection = document.getElementById('display-note-section');
+            const noteContent = document.getElementById('display-note-content');
+            if (element.dataset.notes) {
+                let savedWords = element.dataset.notes.split(',');
+                let notesHtml = '';
+                savedWords.forEach(w => {
+                    let note = localStorage.getItem('note_' + w);
+                    if(note) notesHtml += `<strong>${w}</strong>: ${note}\n`;
+                });
+                noteContent.innerHTML = notesHtml;
+                noteSection.style.display = 'block';
+            } else {
+                noteSection.style.display = 'none';
+            }
+
+            document.getElementById('single-modal').style.display = 'flex';
             document.getElementById('character-target').innerHTML = '';
-            
             writer = HanziWriter.create('character-target', char, { width: 120, height: 120, padding: 5, strokeColor: '#ff8da1', radicalColor: '#ff69b4', delayBetweenStrokes: 200, showOutline: true });
             writer.animateCharacter();
         }
 
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        window.onclick = function(event) { if (event.target == document.getElementById('modal')) closeModal(); }
-        document.getElementById('character-target').addEventListener('click', function() { if(writer) writer.animateCharacter(); });
+        function closeModal(modalId) { 
+            document.getElementById(modalId).style.display = 'none'; 
+            document.getElementById('selection-tooltip').style.display = 'none';
+        }
+        
+        window.onclick = function(event) { 
+            if (event.target.classList.contains('modal-overlay')) closeModal(event.target.id); 
+        }
 
+        // TÍNH NĂNG BÔI ĐEN VÀ MỞ MODAL CỤM TỪ
+        document.addEventListener('mouseup', handleSelection);
+        document.addEventListener('touchend', handleSelection);
+
+        function handleSelection() {
+            setTimeout(() => {
+                const selection = window.getSelection();
+                const tooltip = document.getElementById('selection-tooltip');
+                let text = selection.toString().replace(/\s/g, ''); // Bỏ dấu cách
+                
+                // Chỉ hiện nút khi bôi đen từ 2 chữ Hán trở lên
+                if (text.length > 1 && /[\u4E00-\u9FA5]/.test(text)) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    tooltip.style.top = `${rect.top + window.scrollY - 50}px`;
+                    tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2)}px`;
+                    tooltip.style.transform = 'translateX(-50%)';
+                    tooltip.style.display = 'block';
+                    window.currentSelectedText = text;
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            }, 10);
+        }
+
+        function openCompoundModal() {
+            let text = window.currentSelectedText;
+            document.getElementById('selection-tooltip').style.display = 'none';
+            window.getSelection().removeAllRanges(); // Bỏ bôi đen màu xanh của trình duyệt
+            
+            document.getElementById('compound-word').innerText = text;
+            
+            // Kiểm tra xem cụm này có trong từ điển Compound không
+            let compInfo = compoundDict[text];
+            if(compInfo) {
+                document.getElementById('compound-pinyin').innerText = compInfo.pinyin;
+                document.getElementById('compound-meaning').innerText = compInfo.meaning;
+                document.getElementById('compound-meaning').style.color = 'var(--text-main)';
+            } else {
+                document.getElementById('compound-pinyin').innerText = '...';
+                document.getElementById('compound-meaning').innerText = 'Hệ thống chưa có sẵn nghĩa cụm từ này, nhưng bạn vẫn có thể ghi chú nhé!';
+                document.getElementById('compound-meaning').style.color = '#888';
+            }
+
+            // Tải ghi chú cũ nếu có
+            let savedNote = localStorage.getItem('note_' + text);
+            document.getElementById('compound-note-input').value = savedNote ? savedNote : '';
+            document.getElementById('save-status').style.display = 'none';
+
+            document.getElementById('compound-modal').style.display = 'flex';
+        }
+
+        // LƯU GHI CHÚ VÀ ÁP DỤNG HIGHLIGHT VÀO VĂN BẢN
+        function saveUserNote() {
+            let text = document.getElementById('compound-word').innerText;
+            let noteContent = document.getElementById('compound-note-input').value.trim();
+            
+            if(noteContent) {
+                localStorage.setItem('note_' + text, noteContent);
+            } else {
+                localStorage.removeItem('note_' + text); // Xóa nếu để trống
+            }
+            
+            document.getElementById('save-status').style.display = 'inline';
+            setTimeout(() => { document.getElementById('save-status').style.display = 'none'; }, 2000);
+            
+            applyUserHighlights(); // Cập nhật màu nền
+        }
+
+        function applyUserHighlights() {
+            // Xóa toàn bộ highlight cũ trước khi tô lại
+            document.querySelectorAll('.has-user-note').forEach(el => {
+                el.classList.remove('has-user-note');
+                el.removeAttribute('data-notes');
+            });
+
+            // Tìm các từ đã được lưu note
+            let savedWords = Object.keys(localStorage).filter(k => k.startsWith('note_')).map(k => k.substring(5));
+            const spans = document.querySelectorAll('#text-container .hanzi-char');
+            
+            savedWords.forEach(word => {
+                for (let i = 0; i <= spans.length - word.length; i++) {
+                    let match = true;
+                    for (let j = 0; j < word.length; j++) {
+                        if (spans[i+j].innerText !== word[j]) { match = false; break; }
+                    }
+                    if (match) {
+                        for (let j = 0; j < word.length; j++) {
+                            spans[i+j].classList.add('has-user-note');
+                            let currentNotes = spans[i+j].dataset.notes ? spans[i+j].dataset.notes.split(',') : [];
+                            if (!currentNotes.includes(word)) {
+                                currentNotes.push(word);
+                                spans[i+j].dataset.notes = currentNotes.join(',');
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // CÁC HÀM XỬ LÝ ÂM THANH & TTS
         function updateSpeedLabel(val) { document.getElementById('speedLabel').innerText = val + 'x'; }
-        function clearHighlights() { document.querySelectorAll('.highlight-word').forEach(el => el.classList.remove('highlight-word')); }
+        function clearTTSHighlights() { document.querySelectorAll('.highlight-tts').forEach(el => el.classList.remove('highlight-tts')); }
 
         function playWord(wordText) {
             window.speechSynthesis.cancel();
@@ -468,12 +692,12 @@
 
         function stopAudio() {
             window.speechSynthesis.cancel();
-            clearHighlights();
+            clearTTSHighlights();
         }
 
         function playFullText() {
             window.speechSynthesis.cancel();
-            clearHighlights();
+            clearTTSHighlights();
             
             const msg = new SpeechSynthesisUtterance(window.storyTextOnly);
             msg.lang = 'zh-TW'; 
@@ -481,20 +705,18 @@
             
             msg.onboundary = function(event) {
                 if (event.name === 'word' || event.name === 'sentence') {
-                    clearHighlights();
+                    clearTTSHighlights();
                     let start = event.charIndex;
                     let len = event.charLength || 1; 
-                    
                     for (let i = 0; i < len; i++) {
                         let span = document.querySelector(`span[data-idx="${start + i}"]`);
                         if (span && span.classList.contains('hanzi-char')) {
-                            span.classList.add('highlight-word');
+                            span.classList.add('highlight-tts');
                         }
                     }
                 }
             };
-            
-            msg.onend = function() { clearHighlights(); };
+            msg.onend = function() { clearTTSHighlights(); };
             window.speechSynthesis.speak(msg);
         }
 
