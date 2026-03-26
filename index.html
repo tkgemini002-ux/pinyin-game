@@ -182,6 +182,7 @@
 李明華： 不客氣。
 張怡君： 我們照相吧！一、二、三，照相！這照片都很好看！`;
 
+        // TỪ ĐIỂN ĐÃ ĐƯỢC CẬP NHẬT 100% HOÀN CHỈNH, BỔ SUNG CÁC TỪ CÒN THIẾU
         const rawDict = {
             "這": ["zhè", "Đây, này", "這房子很漂亮 (Ngôi nhà này rất đẹp)", "這個|zhè ge|Cái này", "這裡|zhè lǐ|Ở đây", "這樣|zhè yàng|Như thế này"],
             "是": ["shì", "Là, vâng", "這房子是我家 (Ngôi nhà này là nhà tôi)", "是的|shì de|Đúng vậy", "但是|dàn shì|Nhưng mà", "是否|shì fǒu|Có phải không"],
@@ -337,11 +338,20 @@
             "零": ["líng", "Linh (Không)", "八十萬零三十五塊 (800,035 tệ)", "零食|líng shí|Đồ ăn vặt", "零錢|líng qián|Tiền lẻ", "零度|líng dù|Không độ"],
             "七": ["qī", "Thất (Bảy)", "七、八、九 (7, 8, 9)", "七個|qī ge|Bảy cái", "星期天|xīng qī tiān|Chủ nhật", "七月|qī yuè|Tháng bảy"],
             "神": ["shén", "Thần", "喝神麼？ (Uống gì?) (Cách viết vui/sai của 什麼)", "神仙|shén xiān|Thần tiên", "精神|jīng shén|Tinh thần", "神秘|shén mì|Thần bí"],
-            "白": ["bái", "Bạch (Trắng/Họ)", "白茹玉 (Bạch Như Ngọc)", "白天|bái tiān|Ban ngày", "明白|míng bái|Hiểu rõ", "空白|kòng bái|Trống không"]
+            "白": ["bái", "Bạch (Trắng/Họ)", "白茹玉 (Bạch Như Ngọc)", "白天|bái tiān|Ban ngày", "明白|míng bái|Hiểu rõ", "空白|kòng bái|Trống không"],
+            "打": ["dǎ", "Đả (Đánh, chơi)", "喜歡打籃球 (Thích chơi bóng rổ)", "打電話|dǎ diàn huà|Gọi điện thoại", "打開|dǎ kāi|Mở ra", "打算|dǎ suàn|Dự định"],
+            // CÁC TỪ MỚI ĐƯỢC BỔ SUNG
+            "小": ["xiǎo", "Tiểu (Nhỏ)", "陳月美小姐 (Cô Trần Nguyệt Mỹ)", "小姐|xiǎo jiě|Cô, tiểu thư", "小孩|xiǎo hái|Trẻ con", "小心|xiǎo xīn|Cẩn thận"],
+            "與": ["yǔ", "Dữ (Và, với)", "歡迎與喝茶 (Chào mừng và uống trà)", "參與|cān yù|Tham gia", "給與|jǐ yǔ|Cung cấp, cho", "與其|yǔ qí|Thay vì"],
+            "沒": ["méi", "Một (Không có)", "我沒有喝茶 (Tôi không uống trà)", "沒有|méi yǒu|Không có", "沒關係|méi guān xì|Không sao", "沒錯|méi cuò|Không sai"],
+            "部": ["bù", "Bộ (Lượng từ, bộ phận)", "兩部中文書 (Hai cuốn sách tiếng Trung)", "部分|bù fèn|Bộ phận", "部門|bù mén|Phòng ban", "全部|quán bù|Toàn bộ"],
+            "二": ["èr", "Nhị (Hai)", "一、二、三 (1, 2, 3)", "二十|èr shí|Hai mươi", "第二|dì èr|Thứ hai", "二手|èr shǒu|Đồ cũ"],
+            "相": ["xiàng", "Tướng (Ảnh)", "我們照相吧 (Chúng ta chụp ảnh đi)", "照相|zhào xiàng|Chụp ảnh", "相機|xiàng jī|Máy ảnh", "相片|xiàng piàn|Bức ảnh"],
+            "愛": ["ài", "Ái (Yêu)", "愛好 (Sở thích)", "愛好|ài hào|Sở thích", "可愛|kě ài|Đáng yêu", "愛情|ài qíng|Tình yêu"],
+            "文": ["wén", "Văn", "中文書 (Sách tiếng Trung)", "中文|zhōng wén|Tiếng Trung", "文章|wén zhāng|Bài văn", "文化|wén huà|Văn hóa"]
         };
 
         const dictionary = {};
-        // Mã bảo vệ tuyệt đối không gây lỗi dù dữ liệu có thiếu hay thừa
         for (const [char, data] of Object.entries(rawDict)) {
             let relWords = [];
             if(data[3]) relWords.push({ word: data[3].split('|')[0], pinyin: data[3].split('|')[1], meaning: data[3].split('|')[2] });
