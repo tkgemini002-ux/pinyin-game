@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trắc Nghiệm Từ Vựng - Luyện Nghe & Nhận Diện Chữ</title>
+    <title>Trắc Nghiệm Viết Pinyin - Từ Vựng Giao Thông & Du Lịch</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap');
 
@@ -14,6 +14,7 @@
             --btn-hover: #ff758c;
             --correct: #a8e6cf;
             --wrong: #ffb6b9;
+            --giveup: #ffd194;
             --bg-gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
         }
 
@@ -36,7 +37,7 @@
             box-shadow: 0 15px 35px rgba(255, 154, 158, 0.4);
             padding: 40px;
             width: 100%;
-            max-width: 550px;
+            max-width: 650px;
             text-align: center;
             position: relative;
         }
@@ -47,7 +48,7 @@
             align-items: center;
             font-weight: 800;
             color: #d81b60;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 1.2em;
             border-bottom: 2px dashed var(--primary);
             padding-bottom: 10px;
@@ -62,15 +63,30 @@
             font-size: 1.2em;
         }
 
-        /* Thẻ từ vựng hiển thị Icon, Pinyin, Nghĩa */
+        .repeat-note {
+            font-size: 1.05em;
+            color: #d35400;
+            font-weight: 800;
+            background: #fff3e0;
+            padding: 8px 15px;
+            border-radius: 15px;
+            border: 2px dashed #f39c12;
+            margin-bottom: 15px;
+            display: none;
+        }
+
         .flashcard {
             background: #fff;
             border: 3px solid var(--secondary);
             border-radius: 20px;
             padding: 30px 20px;
-            margin: 20px 0 30px 0;
+            margin: 0 0 20px 0;
             box-shadow: 0 8px 20px rgba(0,0,0,0.05);
             position: relative;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .card-audio-btn {
@@ -98,88 +114,164 @@
         }
 
         .flashcard .icon {
-            font-size: 4em;
-            margin-bottom: 10px;
+            font-size: 3.5em;
+            margin-bottom: 5px;
+            visibility: hidden;
         }
 
-        .flashcard .pinyin {
-            font-size: 1.5em;
-            color: #d81b60;
+        .flashcard .hanzi-display {
+            font-size: 4.5em;
+            color: var(--text-main);
             font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            margin: 15px 0;
+            line-height: 1.2;
+            padding: 0 10px;
         }
 
         .flashcard .meaning {
-            font-size: 1.3em;
-            color: #4a4a4a;
-            font-weight: 600;
+            font-size: 1.4em;
+            color: #d81b60;
+            font-weight: 800;
+            visibility: hidden;
+            line-height: 1.5;
         }
 
-        .options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
+        .pinyin-input {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.5em;
+            border: 3px solid var(--secondary);
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            background-color: #fafafa;
         }
 
-        .option-wrapper {
+        .pinyin-input:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 154, 158, 0.3);
+        }
+
+        .pinyin-input.correct-input {
+            border-color: #388e3c;
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            font-weight: bold;
+        }
+
+        .pinyin-input.wrong-input {
+            border-color: #d32f2f;
+            background-color: #ffebee;
+            color: #b71c1c;
+            animation: shake 0.4s;
+        }
+
+        .pinyin-input.revealed-input {
+            border-color: #e67e22;
+            background-color: #fdf2e9;
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        .analysis-box {
+            text-align: left;
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid var(--secondary);
+            display: none;
+        }
+
+        .diff-box {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #fecfef;
+            display: none;
+        }
+
+        .analysis-title {
+            font-weight: 800;
+            color: #d81b60;
+            margin-bottom: 10px;
+            font-size: 1.1em;
             display: flex;
+            align-items: center;
             gap: 8px;
         }
 
-        .option-btn {
-            flex-grow: 1;
-            background-color: white;
-            color: var(--text-main);
-            border: 2px solid var(--secondary);
-            padding: 15px 5px;
-            font-size: 1.8em; 
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+        .diff-row {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .diff-label {
+            display: inline-block;
+            width: 90px;
             font-weight: 600;
+            color: #888;
         }
 
-        .option-btn:hover:not(:disabled) {
-            background-color: var(--secondary);
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .diff-user {
+            color: #d32f2f;
+            text-decoration: line-through;
+            background: #ffebee;
+            padding: 2px 5px;
+            border-radius: 5px;
         }
 
-        .option-btn.correct { 
-            background-color: var(--correct) !important; 
-            border-color: #388e3c !important; 
-            color: #1b5e20; 
-            transform: scale(1.05);
-        }
-        
-        .option-btn.wrong { 
-            background-color: var(--wrong) !important; 
-            border-color: #d32f2f !important; 
-            color: #b71c1c; 
-            opacity: 0.5; 
-            cursor: not-allowed; 
+        .diff-correct {
+            color: #388e3c;
+            font-weight: bold;
+            background: #e8f5e9;
+            padding: 2px 5px;
+            border-radius: 5px;
         }
 
-        .opt-audio-btn {
-            background: #fff;
-            border: 2px solid var(--secondary);
-            color: var(--primary);
-            border-radius: 15px;
-            padding: 0 12px;
-            cursor: pointer;
-            font-size: 1.2em;
-            transition: 0.2s;
+        .grammar-content {
+            color: #5d4037;
+            line-height: 1.6;
+            font-size: 1.05em;
+            background: #fff0f5;
+            padding: 10px 15px;
+            border-left: 4px solid #ff9a9e;
+            border-radius: 0 10px 10px 0;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .hint-text {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .btn-group {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .opt-audio-btn:hover { 
-            background: var(--secondary); 
-            border-color: var(--primary); 
+        .post-action-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
         }
 
         .action-btn {
@@ -194,7 +286,7 @@
             box-shadow: 0 4px 15px rgba(255, 154, 158, 0.5);
             transition: all 0.3s;
             width: 100%;
-            display: none;
+            margin: 0;
         }
 
         .action-btn:hover {
@@ -202,8 +294,32 @@
             box-shadow: 0 6px 20px rgba(255, 154, 158, 0.7);
         }
 
+        .give-up-btn {
+            background: linear-gradient(to right, #e0c3fc, #8ec5fc);
+            color: #4a4a4a;
+            box-shadow: 0 4px 15px rgba(142, 197, 252, 0.5);
+        }
+
+        .repeat-btn {
+            background: linear-gradient(to right, #f6d365, #fda085);
+            color: #d35400;
+            box-shadow: 0 4px 15px rgba(253, 160, 133, 0.5);
+            font-size: 1.1em;
+        }
+        
+        .repeat-btn:disabled {
+            background: #e0e0e0;
+            color: #888;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .next-btn-half {
+            font-size: 1.1em;
+        }
+
         .feedback-msg {
-            margin-top: 15px;
             font-size: 1.1em;
             font-weight: 800;
             min-height: 25px;
@@ -220,34 +336,57 @@
 
 <div class="quiz-container" id="quiz-box">
     <div class="header-info">
-        <span id="question-count">Câu: 1/43</span>
+        <span id="question-count">Câu: 1/...</span>
         <span class="timer" id="timer">00:00</span>
     </div>
 
+    <div class="repeat-note" id="repeat-note">Thẻ sẽ lặp lại ở cuối bài: 0</div>
+
     <div class="flashcard">
         <button class="card-audio-btn" onclick="playQuestionAudio()" title="Nghe phát âm">🔊</button>
-        <div class="icon" id="card-icon">🤔</div>
-        <div class="pinyin" id="card-pinyin">pīn yīn</div>
-        <div class="meaning" id="card-meaning">Nghĩa của từ</div>
+        <div class="icon" id="card-icon">💬</div>
+        <div class="hanzi-display" id="card-hanzi">漢字</div>
+        <div class="meaning" id="card-meaning">Nghĩa</div>
     </div>
     
-    <div class="options" id="options">
+    <input type="text" id="pinyin-input" class="pinyin-input" placeholder="Gõ pinyin có dấu vào đây..." autocomplete="off">
+    <div class="hint-text">
+        Mẹo: Gõ <strong>có dấu thanh điệu (ā, á, ǎ, à)</strong>. Hệ thống tự động bỏ qua khoảng trắng. Ấn <strong>Enter</strong> để kiểm tra.
+    </div>
+
+    <div class="analysis-box" id="analysis-box">
+        <div class="diff-box" id="diff-box">
+            <div class="analysis-title">🔍 Đối chiếu lỗi sai:</div>
+            <div class="diff-row"><span class="diff-label">Bạn gõ:</span> <span id="diff-user" class="diff-user"></span></div>
+            <div class="diff-row"><span class="diff-label">Chuẩn:</span> <span id="diff-correct" class="diff-correct"></span></div>
         </div>
+        <div class="grammar-box" id="grammar-box">
+            <div class="analysis-title">💡 Ghi chú từ vựng:</div>
+            <div class="grammar-content" id="grammar-content"></div>
+        </div>
+    </div>
 
     <div class="feedback-msg" id="feedback-msg"></div>
 
-    <button class="action-btn" id="next-btn" onclick="nextQuestion()">Câu tiếp theo 🌸</button>
+    <div class="btn-group">
+        <button class="action-btn" id="check-btn" onclick="checkPinyin()">Kiểm tra ✨</button>
+        <button class="action-btn give-up-btn" id="give-up-btn" onclick="giveUp()">Xem đáp án 🏳️</button>
+        
+        <div class="post-action-group" id="post-actions" style="display: none;">
+            <button class="action-btn repeat-btn" id="repeat-btn" onclick="repeatCard()">Lặp lại 🔁</button>
+            <button class="action-btn next-btn-half" id="next-btn" onclick="nextQuestion()">Từ tiếp theo 🌸</button>
+        </div>
+    </div>
 </div>
 
 <div class="quiz-container result-screen" id="result-box">
-    <h2>Hoàn Thành! <span class="heart">💖</span></h2>
+    <h2>Hoàn Thành! <span class="heart">🏆</span></h2>
     <p id="final-time">Thời gian hoàn thành: 00:00</p>
-    <p id="feedback-text">Bạn đã ôn tập trọn vẹn 43 từ vựng. Đỉnh quá đi mất! Hãy duy trì phong độ này nhé.</p>
+    <p id="feedback-text">Quá tuyệt vời! Bạn đã vượt qua thành công bộ từ vựng mới toanh này. Cố gắng phát huy nhé! 🌟</p>
     <button class="action-btn" style="display: block; margin-top: 30px;" onclick="location.reload()">Luyện tập lại ✨</button>
 </div>
 
 <script>
-    // Hàm đọc Text-to-Speech (Giọng Phồn Thể Đài Loan)
     function speakText(text) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
@@ -256,69 +395,104 @@
             window.speechSynthesis.cancel(); 
             window.speechSynthesis.speak(utterance);
         } else {
-            alert("Trình duyệt không hỗ trợ phát âm. Vui lòng thử dùng Chrome hoặc Safari!");
+            alert("Trình duyệt không hỗ trợ phát âm!");
         }
     }
 
     const fullVocabList = [
-        { hanzi: "一共", pinyin: "yí gòng", meaning: "Tổng cộng", icon: "🧮" },
-        { hanzi: "共", pinyin: "gòng", meaning: "Chung, tổng", icon: "➕" },
-        { hanzi: "多少", pinyin: "duō shǎo", meaning: "Bao nhiêu", icon: "❓" },
-        { hanzi: "少", pinyin: "shǎo", meaning: "Ít", icon: "🔽" },
-        { hanzi: "錢", pinyin: "qián", meaning: "Tiền", icon: "💵" },
-        { hanzi: "老闆", pinyin: "lǎo bǎn", meaning: "Ông chủ", icon: "👨‍💼" },
-        { hanzi: "闆", pinyin: "bǎn", meaning: "Chủ", icon: "💼" },
-        { hanzi: "買", pinyin: "mǎi", meaning: "Mua", icon: "🛒" },
-        { hanzi: "盃", pinyin: "bēi", meaning: "Cốc, ly", icon: "🍵" },
-        { hanzi: "包子", pinyin: "bāo zi", meaning: "Bánh bao", icon: "🥟" },
-        { hanzi: "包", pinyin: "bāo", meaning: "Bao, túi, bọc", icon: "🛍️" },
-        { hanzi: "大", pinyin: "dà", meaning: "To, lớn", icon: "🐘" },
-        { hanzi: "幫", pinyin: "bāng", meaning: "Giúp đỡ", icon: "🤝" },
-        { hanzi: "微波", pinyin: "wéi bō", meaning: "Quay vi sóng", icon: "♨️" },
-        { hanzi: "微", pinyin: "wéi", meaning: "Nhỏ, vi", icon: "🔬" },
-        { hanzi: "波", pinyin: "bō", meaning: "Sóng", icon: "🌊" },
-        { hanzi: "百", pinyin: "bǎi", meaning: "Trăm", icon: "💯" },
-        { hanzi: "外袋", pinyin: "wài dài", meaning: "Túi mang đi", icon: "🛍️" },
-        { hanzi: "外", pinyin: "wài", meaning: "Ngoài", icon: "🚪" },
-        { hanzi: "袋", pinyin: "dài", meaning: "Túi, bao", icon: "🎒" },
-        { hanzi: "內用", pinyin: "nèi yòng", meaning: "Dùng tại quán", icon: "🍽️" },
-        { hanzi: "支", pinyin: "zhī", meaning: "Lượng từ (cây/chiếc)", icon: "🥢" },
-        { hanzi: "新", pinyin: "xīn", meaning: "Mới", icon: "✨" },
-        { hanzi: "手機", pinyin: "shǒu jī", meaning: "Điện thoại", icon: "📱" },
-        { hanzi: "手", pinyin: "shǒu", meaning: "Tay", icon: "✋" },
-        { hanzi: "機", pinyin: "jī", meaning: "Máy móc", icon: "⚙️" },
-        { hanzi: "太", pinyin: "tài", meaning: "Quá, lắm", icon: "😩" },
-        { hanzi: "舊", pinyin: "jiù", meaning: "Cũ", icon: "🏚️" },
-        { hanzi: "了", pinyin: "le", meaning: "Rồi (trợ từ)", icon: "🏁" },
-        { hanzi: "種", pinyin: "zhǒng", meaning: "Loại, chủng loại", icon: "🧬" },
-        { hanzi: "能", pinyin: "néng", meaning: "Có thể", icon: "💪" },
-        { hanzi: "上網", pinyin: "shàng wǎng", meaning: "Lên mạng", icon: "🌐" },
-        { hanzi: "上", pinyin: "shàng", meaning: "Lên, trên", icon: "⬆️" },
-        { hanzi: "網", pinyin: "wǎng", meaning: "Mạng, lưới", icon: "🕸️" },
-        { hanzi: "那", pinyin: "nà", meaning: "Kia, đó", icon: "👉" },
-        { hanzi: "貴", pinyin: "guì", meaning: "Đắt, quý", icon: "💎" },
-        { hanzi: "賣", pinyin: "mài", meaning: "Bán", icon: "🏷️" },
-        { hanzi: "便宜", pinyin: "pián yi", meaning: "Rẻ", icon: "📉" },
-        { hanzi: "便", pinyin: "pián", meaning: "Tiện, rẻ", icon: "💸" },
-        { hanzi: "宜", pinyin: "yí", meaning: "Phù hợp", icon: "⚖️" },
-        { hanzi: "韆", pinyin: "qiān", meaning: "Nghìn", icon: "🎰" },
-        { hanzi: "為什麼", pinyin: "wèi shén me", meaning: "Tại sao", icon: "🤷" },
-        { hanzi: "為", pinyin: "wèi", meaning: "Vì, để", icon: "❓" }
+        { hanzi: "火車", pinyin: "huǒ chē", meaning: "Xe lửa / Tàu hỏa", icon: "🚆", grammar: "Danh từ: Phương tiện giao thông đường sắt. Lượng từ: 班 (bān) hoặc 列 (liè)." },
+        { hanzi: "跟", pinyin: "gēn", meaning: "Cùng / Với", icon: "🤝", grammar: "Giới từ / Liên từ: A 跟 B + Động từ (A làm gì cùng B)." },
+        { hanzi: "玩", pinyin: "wán", meaning: "Chơi", icon: "🎮", grammar: "Động từ: Đi chơi, vui chơi giải trí. Đi chơi ở đâu dùng 去 + Địa điểm + 玩." },
+        { hanzi: "怎麼", pinyin: "zěn me", meaning: "Như thế nào / Sao", icon: "🤷", grammar: "Đại từ nghi vấn: 怎麼 + Động từ (Hỏi cách thức thực hiện hành động)." },
+        { hanzi: "慢", pinyin: "màn", meaning: "Chậm", icon: "🐢", grammar: "Tính từ: Trái nghĩa với 快 (kuài - Nhanh)." },
+        { hanzi: "鐘頭", pinyin: "zhōng tóu", meaning: "Giờ / Tiếng đồng hồ", icon: "⏳", grammar: "Danh từ chỉ thời gian: Lượng từ của nó thường là 個 (Ví dụ: 兩個鐘頭 - 2 tiếng đồng hồ)." },
+        { hanzi: "比較", pinyin: "bǐ jiào", meaning: "Khá / Tương đối", icon: "⚖️", grammar: "Phó từ chỉ mức độ: 比較 + Tính từ (Khá là...)." },
+        { hanzi: "快", pinyin: "kuài", meaning: "Nhanh", icon: "🐇", grammar: "Tính từ: Trái nghĩa với 慢 (màn - Chậm)." },
+        { hanzi: "車票", pinyin: "chē piào", meaning: "Vé xe", icon: "🎫", grammar: "Danh từ: 買車票 (Mua vé xe). Lượng từ là 張 (zhāng)." },
+        { hanzi: "非常", pinyin: "fēi cháng", meaning: "Vô cùng / Rất", icon: "🌟", grammar: "Phó từ chỉ mức độ: Thường đứng trước tính từ, mức độ cao hơn 很." },
+        { hanzi: "但是", pinyin: "dàn shì", meaning: "Nhưng / Nhưng mà", icon: "⏸️", grammar: "Liên từ: Biểu thị sự chuyển ý trong câu." },
+        { hanzi: "又", pinyin: "yòu", meaning: "Lại / Vừa... lại...", icon: "🔄", grammar: "Phó từ: 又 + Tính từ 1 + 又 + Tính từ 2 (Vừa... vừa...)." },
+        { hanzi: "舒服", pinyin: "shū fú", meaning: "Thoải mái", icon: "😌", grammar: "Tính từ: Miêu tả cảm giác dễ chịu của cơ thể hoặc tinh thần." },
+        { hanzi: "站", pinyin: "zhàn", meaning: "Trạm / Đứng", icon: "🚉", grammar: "Danh từ / Động từ: 車站 (Trạm xe), 站起來 (Đứng lên)." },
+        { hanzi: "或是", pinyin: "huò shì", meaning: "Hoặc là", icon: "🔀", grammar: "Liên từ: Dùng trong câu trần thuật (khác với 還是 dùng trong câu hỏi)." },
+        { hanzi: "臺南", pinyin: "tái nán", meaning: "Đài Nam", icon: "🏙️", grammar: "Danh từ riêng: Một thành phố ở phía Nam Đài Loan." },
+        { hanzi: "高鐵", pinyin: "gāo tiě", meaning: "Đường sắt cao tốc", icon: "🚅", grammar: "Danh từ: Viết tắt của 高速鐵路 (gāo sù tiě lù)." },
+        { hanzi: "網路上", pinyin: "wǎng lù shàng", meaning: "Trên mạng", icon: "🌐", grammar: "Cụm danh từ chỉ nơi chốn: 網路 (Mạng internet) + 上 (Trên)." },
+        { hanzi: "便利商店", pinyin: "biàn lì shāng diàn", meaning: "Cửa hàng tiện lợi", icon: "🏪", grammar: "Danh từ: Nơi bán đồ dùng thiết yếu mở 24/7. Lượng từ: 家 (jiā)." },
+        { hanzi: "同學", pinyin: "tóng xué", meaning: "Bạn học", icon: "🎒", grammar: "Danh từ: Người học cùng lớp, cùng trường." },
+        { hanzi: "參觀", pinyin: "cān guān", meaning: "Tham quan", icon: "👀", grammar: "Động từ: Đi xem, thăm thú một địa điểm (bảo tàng, trường học...)." },
+        { hanzi: "古代", pinyin: "gǔ dài", meaning: "Cổ đại", icon: "🏺", grammar: "Danh từ: Thời kỳ lịch sử xa xưa." },
+        { hanzi: "騎", pinyin: "qí", meaning: "Cưỡi / Lái (xe 2 bánh)", icon: "🚲", grammar: "Động từ: Dùng cho xe đạp (腳踏車), xe máy (機車) hoặc động vật như ngựa (馬)." },
+        { hanzi: "機車", pinyin: "jī chē", meaning: "Xe máy", icon: "🛵", grammar: "Danh từ: Lượng từ là 輛 (liàng) hoặc 台 (tái)." },
+        { hanzi: "載", pinyin: "zài", meaning: "Chở", icon: "🚗", grammar: "Động từ: Chở người hoặc hàng hóa bằng phương tiện." },
+        { hanzi: "捷運", pinyin: "jié yùn", meaning: "Tàu điện ngầm (MRT)", icon: "🚇", grammar: "Danh từ: Hệ thống giao thông công cộng phổ biến ở Đài Bắc, Cao Hùng." },
+        { hanzi: "比", pinyin: "bǐ", meaning: "So với", icon: "⚖️", grammar: "Giới từ: A 比 B + Tính từ (A ... hơn B)." },
+        { hanzi: "故宮博物院", pinyin: "gù gōng bó wù yuàn", meaning: "Bảo tàng Cố Cung", icon: "🏛️", grammar: "Danh từ riêng: Một viện bảo tàng nổi tiếng ở Đài Loan." },
+        { hanzi: "故宮", pinyin: "gù gōng", meaning: "Cố Cung", icon: "🏯", grammar: "Danh từ riêng: Tên gọi tắt của 故宮博物院." },
+        { hanzi: "中國", pinyin: "zhōng guó", meaning: "Trung Quốc", icon: "🇨🇳", grammar: "Danh từ riêng: Tên quốc gia." },
+        { hanzi: "公共汽車", pinyin: "gōng gòng qì chē", meaning: "Xe buýt", icon: "🚌", grammar: "Danh từ: Xe buýt công cộng. Lượng từ: 輛 (liàng) / 班 (bān)." },
+        { hanzi: "公車", pinyin: "gōng chē", meaning: "Xe buýt (viết tắt)", icon: "🚍", grammar: "Danh từ: Dạng gọi tắt phổ biến của 公共汽車." },
+        { hanzi: "不行", pinyin: "bù xíng", meaning: "Không được / Không xong", icon: "❌", grammar: "Cụm từ: Biểu thị sự từ chối, không đồng ý hoặc không khả thi." },
+        { hanzi: "計程車", pinyin: "jì chéng chē", meaning: "Xe taxi", icon: "🚕", grammar: "Danh từ: Lượng từ thường dùng là 輛 (liàng). Động từ đi kèm là 叫 (gọi xe)." },
+        { hanzi: "差不多", pinyin: "chà bù duō", meaning: "Khoảng chừng / Tương tự nhau", icon: "🤏", grammar: "Phó từ / Tính từ: 差不多一樣 (Gần giống nhau)." },
+        { hanzi: "星期", pinyin: "xīng qī", meaning: "Tuần / Thứ", icon: "📅", grammar: "Danh từ: 星期一 (Thứ 2), 下個星期 (Tuần sau)." },
+        { hanzi: "回國", pinyin: "huí guó", meaning: "Về nước", icon: "🛬", grammar: "Động từ ly hợp: 回 (về) + 國 (nước)." },
+        { hanzi: "打算", pinyin: "dǎ suàn", meaning: "Dự định", icon: "💭", grammar: "Động từ / Danh từ: Kế hoạch làm việc gì đó trong tương lai." },
+        { hanzi: "電視", pinyin: "diàn shì", meaning: "Tivi", icon: "📺", grammar: "Danh từ: 看電視 (Xem tivi). Lượng từ là 台 (tái)." },
+        { hanzi: "影片", pinyin: "yǐng piàn", meaning: "Video / Phim ảnh", icon: "🎬", grammar: "Danh từ: Đoạn video, clip. Lượng từ: 部 (bù)." },
+        { hanzi: "行", pinyin: "xíng", meaning: "Được / OK", icon: "👌", grammar: "Động từ/Tính từ: Biểu thị sự đồng ý, chấp thuận." },
+        { hanzi: "功課", pinyin: "gōng kè", meaning: "Bài tập về nhà", icon: "📝", grammar: "Danh từ: 做功課 (Làm bài tập)." },
+        { hanzi: "出去", pinyin: "chū qù", meaning: "Đi ra ngoài", icon: "🚶‍♂️", grammar: "Động từ xu hướng: Hành động hướng ra xa khỏi người nói." },
+        { hanzi: "大概", pinyin: "dà gài", meaning: "Đại khái / Khoảng", icon: "🤷", grammar: "Phó từ: Biểu thị sự ước lượng, phỏng đoán." },
+        { hanzi: "放假", pinyin: "fàng jià", meaning: "Nghỉ lễ / Nghỉ phép", icon: "🏖️", grammar: "Động từ ly hợp: 放 (thả) + 假 (ngày nghỉ)." },
+        { hanzi: "下個星期", pinyin: "xià ge xīng qī", meaning: "Tuần sau", icon: "🗓️", grammar: "Cụm danh từ chỉ thời gian." },
+        { hanzi: "有時候", pinyin: "yǒu shí hou", meaning: "Có lúc / Có khi", icon: "⏳", grammar: "Cụm từ chỉ thời gian: Đôi khi làm việc gì đó." },
+        { hanzi: "多久", pinyin: "duō jiǔ", meaning: "Bao lâu", icon: "⏱️", grammar: "Đại từ nghi vấn: Dùng để hỏi khoảng thời gian kéo dài bao lâu." },
+        { hanzi: "臺東", pinyin: "tái dōng", meaning: "Đài Đông", icon: "🌅", grammar: "Danh từ riêng: Tên một huyện ở phía Đông Đài Loan." },
+        { hanzi: "女", pinyin: "nǚ", meaning: "Nữ / Giới tính nữ", icon: "👩", grammar: "Tiền tố: Thường ghép với danh từ chỉ người (Ví dụ: 女朋友 - Bạn gái, 女生 - Học sinh nữ)." },
+        { hanzi: "月", pinyin: "yuè", meaning: "Tháng", icon: "🌙", grammar: "Danh từ: Số đếm + 月 dùng để chỉ các tháng trong năm (Ví dụ: 一月 - Tháng 1)." },
+        { hanzi: "號", pinyin: "hào", meaning: "Ngày / Số", icon: "📅", grammar: "Danh từ: Số đếm + 號 dùng để chỉ ngày trong tháng ở văn nói (Ví dụ: 五號 - Ngày mùng 5)." },
+        { hanzi: "帶", pinyin: "dài", meaning: "Mang / Dẫn đi", icon: "🎒", grammar: "Động từ: 帶東西 (mang đồ), 帶人去 (dẫn người đi)." },
+        { hanzi: "她", pinyin: "tā", meaning: "Cô ấy", icon: "👱‍♀️", grammar: "Đại từ nhân xưng ngôi thứ 3 số ít chỉ nữ giới." },
+        { hanzi: "還", pinyin: "hái", meaning: "Vẫn / Còn", icon: "🔄", grammar: "Phó từ: 還有 (Vẫn còn), 還沒 (Vẫn chưa)." },
+        { hanzi: "建議", pinyin: "jiàn yì", meaning: "Đề nghị / Khuyên", icon: "💬", grammar: "Động từ / Danh từ: Đưa ra lời khuyên cho ai đó." },
+        { hanzi: "夜市", pinyin: "yè shì", meaning: "Chợ đêm", icon: "🏮", grammar: "Danh từ: Điểm đến ăn uống vui chơi quen thuộc ở Đài Loan. Lượng từ: 個 (gè)." },
+        { hanzi: "應該", pinyin: "yīng gāi", meaning: "Nên / Phải", icon: "💡", grammar: "Trợ động từ: Khuyên ai đó nên hoặc cần phải làm gì." },
+        { hanzi: "逛", pinyin: "guàng", meaning: "Đi dạo / Dạo phố", icon: "🚶‍♀️", grammar: "Động từ: 逛街 (Dạo phố), 逛夜市 (Đi dạo chợ đêm)." },
+        { hanzi: "特別", pinyin: "tè bié", meaning: "Đặc biệt", icon: "✨", grammar: "Tính từ / Phó từ: Khác thường, hoặc nhấn mạnh mức độ 'vô cùng'." },
+        { hanzi: "茶館", pinyin: "chá guǎn", meaning: "Quán trà", icon: "🍵", grammar: "Danh từ: Nơi uống trà, Lượng từ là 家 (jiā)." },
+        { hanzi: "決定", pinyin: "jué dìng", meaning: "Quyết định", icon: "🎯", grammar: "Động từ / Danh từ: Đưa ra quyết định cuối cùng." },
+        { hanzi: "要是", pinyin: "yào shì", meaning: "Nếu như", icon: "❓", grammar: "Liên từ: Dùng trong câu điều kiện, đồng nghĩa với 如果 (rú guǒ)." },
+        { hanzi: "就", pinyin: "jiù", meaning: "Thì / Liền", icon: "➡️", grammar: "Phó từ: Thường đi kèm với 要是/如果 để biểu thị kết quả sẽ xảy ra." },
+        { hanzi: "貓空", pinyin: "māo kōng", meaning: "Miêu Không (Maokong)", icon: "🚠", grammar: "Danh từ riêng: Tên một khu vực nổi tiếng với trà và cáp treo ở Đài Bắc." }
     ];
 
     let quizQuestions = [];
     let currentQ = 0;
     let timerInterval;
     let seconds = 0, minutes = 0;
+    let repeatedCardsCount = 0; 
 
     const iconEl = document.getElementById('card-icon');
-    const pinyinEl = document.getElementById('card-pinyin');
+    const hanziEl = document.getElementById('card-hanzi');
     const meaningEl = document.getElementById('card-meaning');
-    const optEl = document.getElementById('options');
-    const nextBtn = document.getElementById('next-btn');
+    const inputEl = document.getElementById('pinyin-input');
+    
+    // Các vùng phân tích
+    const analysisBox = document.getElementById('analysis-box');
+    const diffBox = document.getElementById('diff-box');
+    const diffUser = document.getElementById('diff-user');
+    const diffCorrect = document.getElementById('diff-correct');
+    const grammarContent = document.getElementById('grammar-content');
+
+    const checkBtn = document.getElementById('check-btn');
+    const giveUpBtn = document.getElementById('give-up-btn');
+    const postActionsEl = document.getElementById('post-actions');
+    const repeatBtn = document.getElementById('repeat-btn');
     const countEl = document.getElementById('question-count');
     const timerEl = document.getElementById('timer');
     const msgEl = document.getElementById('feedback-msg');
+    const repeatNoteEl = document.getElementById('repeat-note');
 
     function shuffleArray(array) {
         let arr = [...array];
@@ -331,6 +505,7 @@
 
     function initQuiz() {
         quizQuestions = shuffleArray(fullVocabList); 
+        countEl.innerText = `Câu: 1/${quizQuestions.length}`;
         startTimer();
         loadQuestion();
     }
@@ -350,80 +525,126 @@
     }
 
     function loadQuestion() {
-        nextBtn.style.display = 'none';
+        inputEl.value = "";
+        inputEl.disabled = false;
+        inputEl.className = "pinyin-input";
         msgEl.innerText = "";
-        msgEl.style.color = "inherit";
-        optEl.innerHTML = '';
         
-        countEl.innerText = `Câu: ${currentQ + 1}/${quizQuestions.length}`;
+        analysisBox.style.display = 'none';
+        diffBox.style.display = 'none';
+
+        checkBtn.style.display = 'block';
+        giveUpBtn.style.display = 'block';
+        postActionsEl.style.display = 'none';
+        
+        repeatBtn.disabled = false;
+        repeatBtn.innerText = "Lặp lại 🔁";
+        
+        countEl.innerText = `Từ: ${currentQ + 1}/${quizQuestions.length}`;
         
         const currentWord = quizQuestions[currentQ];
+        
         iconEl.innerText = currentWord.icon;
-        pinyinEl.innerText = currentWord.pinyin;
+        hanziEl.innerText = currentWord.hanzi;
         meaningEl.innerText = currentWord.meaning;
 
-        let options = [currentWord];
-        
-        // THUẬT TOÁN TẠO ĐÁP ÁN NHIỄU THEO SỐ LƯỢNG CHỮ
-        const isSingleChar = currentWord.hanzi.length === 1; // Kiểm tra xem từ gốc là đơn hay ghép
-        
-        let availableDistractors = fullVocabList.filter(word => {
-            const isDistSingleChar = word.hanzi.length === 1;
-            // Chỉ lấy những từ KHÁC từ gốc và CÙNG nhóm (đơn đi với đơn, ghép đi với ghép)
-            return word.hanzi !== currentWord.hanzi && isSingleChar === isDistSingleChar;
-        });
-        
-        availableDistractors = shuffleArray(availableDistractors);
-        
-        // Lấy 3 đáp án nhiễu từ danh sách đã lọc
-        options.push(availableDistractors[0]);
-        options.push(availableDistractors[1]);
-        options.push(availableDistractors[2]);
-        
-        options = shuffleArray(options);
+        iconEl.style.visibility = 'hidden';
+        meaningEl.style.visibility = 'hidden';
 
-        options.forEach((opt) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'option-wrapper';
-
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt.hanzi;
-            btn.onclick = () => checkAnswer(opt.hanzi, currentWord.hanzi, btn);
-
-            const audioBtn = document.createElement('button');
-            audioBtn.className = 'opt-audio-btn';
-            audioBtn.innerText = '🔊';
-            audioBtn.title = 'Nghe chữ này';
-            audioBtn.onclick = (e) => {
-                e.stopPropagation(); 
-                speakText(opt.hanzi);
-            };
-
-            wrapper.appendChild(btn);
-            wrapper.appendChild(audioBtn);
-            optEl.appendChild(wrapper);
-        });
+        inputEl.focus();
     }
 
-    function checkAnswer(selectedHanzi, correctHanzi, btn) {
-        if (btn.disabled) return;
+    function cleanString(str) {
+        return str.toLowerCase().replace(/[\s,\.\?!\uff0c\u3002\uff1f\uff01]/g, '');
+    }
 
-        if (selectedHanzi === correctHanzi) {
-            btn.classList.add('correct');
+    function checkPinyin() {
+        if (inputEl.disabled) return; 
+
+        const userStr = inputEl.value;
+        if (userStr.trim() === "") {
+            msgEl.innerText = "Bạn chưa nhập pinyin kìa! 🤔";
+            msgEl.style.color = "#d32f2f";
+            return;
+        }
+
+        const currentWord = quizQuestions[currentQ];
+        const cleanUserInput = cleanString(userStr);
+        const cleanCorrectPinyin = cleanString(currentWord.pinyin);
+
+        if (cleanUserInput === cleanCorrectPinyin) {
+            inputEl.className = "pinyin-input correct-input";
+            inputEl.disabled = true;
             msgEl.innerText = "Chính xác! 🎉";
             msgEl.style.color = "#388e3c";
             
-            const allBtns = optEl.querySelectorAll('.option-btn');
-            allBtns.forEach(b => b.disabled = true);
+            iconEl.style.visibility = 'visible';
+            meaningEl.style.visibility = 'visible';
             
-            nextBtn.style.display = 'block';
+            grammarContent.innerHTML = currentWord.grammar;
+            analysisBox.style.display = 'block';
+            diffBox.style.display = 'none';
+
+            checkBtn.style.display = 'none';
+            giveUpBtn.style.display = 'none';
+            postActionsEl.style.display = 'flex'; 
+            
+            document.getElementById('next-btn').focus(); 
         } else {
-            btn.classList.add('wrong');
-            btn.disabled = true;
-            msgEl.innerText = "Chưa đúng rồi, hãy thử chữ khác nhé! 🥺";
+            inputEl.className = "pinyin-input wrong-input";
+            msgEl.innerText = "Chưa đúng! Hãy đọc kỹ lại xem có gõ sai thanh điệu ở chữ nào không nhé. Nếu khó quá hãy bấm 'Xem đáp án'. 🥺";
             msgEl.style.color = "#d32f2f";
+            
+            setTimeout(() => {
+                if(!inputEl.disabled) inputEl.className = "pinyin-input";
+            }, 500);
         }
+    }
+
+    function giveUp() {
+        if (inputEl.disabled) return;
+
+        const currentWord = quizQuestions[currentQ];
+        const userStr = inputEl.value;
+        
+        inputEl.value = currentWord.pinyin;
+        inputEl.className = "pinyin-input revealed-input";
+        inputEl.disabled = true;
+        
+        iconEl.style.visibility = 'visible';
+        meaningEl.style.visibility = 'visible';
+        
+        analysisBox.style.display = 'block';
+        diffBox.style.display = 'block';
+        
+        diffUser.innerText = userStr.trim() === "" ? "(Bạn chưa nhập gì)" : userStr;
+        diffCorrect.innerText = currentWord.pinyin;
+        
+        grammarContent.innerHTML = currentWord.grammar;
+
+        msgEl.innerHTML = `Đừng buồn nhé! Bạn có thể xem đối chiếu lỗi sai ở trên. Nhớ chọn lặp lại để học kỹ hơn! 💪`;
+        msgEl.style.color = "#d35400";
+
+        checkBtn.style.display = 'none';
+        giveUpBtn.style.display = 'none';
+        postActionsEl.style.display = 'flex'; 
+        
+        document.getElementById('next-btn').focus(); 
+    }
+
+    function repeatCard() {
+        if (repeatBtn.disabled) return;
+        
+        quizQuestions.push(quizQuestions[currentQ]);
+        repeatedCardsCount++;
+        
+        repeatNoteEl.style.display = 'inline-block';
+        repeatNoteEl.innerText = `Thẻ sẽ lặp lại ở cuối bài: ${repeatedCardsCount}`;
+        
+        countEl.innerText = `Từ: ${currentQ + 1}/${quizQuestions.length}`;
+        
+        repeatBtn.disabled = true;
+        repeatBtn.innerText = "Đã thêm vào cuối 📝";
     }
 
     function nextQuestion() {
@@ -442,6 +663,17 @@
         resBox.style.display = 'block';
         document.getElementById('final-time').innerText = `Thời gian hoàn thành: ${timerEl.innerText}`;
     }
+
+    inputEl.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            if (!inputEl.disabled) {
+                checkPinyin();
+            } else if (postActionsEl.style.display === 'flex') {
+                nextQuestion();
+            }
+        }
+    });
 
     initQuiz();
 </script>
