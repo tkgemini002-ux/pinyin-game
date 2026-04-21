@@ -1,472 +1,429 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Học Từ Vựng Tiếng Trung - Pink & Blue</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <title>Học Tiếng Trung - Từ Vựng & Ví Dụ Thực Tế</title>
     <style>
-        :root {
-            --pink-light: #FFE4E1;
-            --pink-dark: #FFB6C1;
-            --blue-light: #E0F7FA;
-            --blue-dark: #81D4FA;
-            --text-main: #4A4A4A;
-            --white: #FFFFFF;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap');
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary: #ff9a9e;
+            --secondary: #fecfef;
+            --text-main: #5d4037;
+            --btn-hover: #ff758c;
+            --correct: #a8e6cf;
+            --wrong: #ffb6b9;
+            --giveup: #ffd194;
+            --bg-gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
         }
 
         body {
-            background: linear-gradient(135deg, var(--pink-light) 0%, var(--blue-light) 100%);
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
             color: var(--text-main);
-            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
-            text-align: center;
-            padding: 20px;
-            width: 100%;
-        }
-
-        h1 {
-            color: #d87093;
-            margin-bottom: 15px;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
             justify-content: center;
-            margin-bottom: 20px;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        button {
-            padding: 10px 20px;
-            border: none;
+        .quiz-container {
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 25px;
-            background-color: var(--pink-dark);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background-color: var(--blue-dark);
-            transform: translateY(-2px);
-        }
-
-        .active-btn {
-            background-color: var(--blue-dark);
-        }
-
-        .main-container {
-            width: 90%;
-            max-width: 800px;
-            height: 65vh;
-            position: relative;
-            background: var(--white);
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            overflow: hidden;
-            border: 3px solid var(--pink-light);
-        }
-
-        #mindmap-view {
+            box-shadow: 0 15px 35px rgba(255, 154, 158, 0.4);
+            padding: 30px;
             width: 100%;
-            height: 100%;
+            max-width: 700px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+            color: #d81b60;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 2px dashed var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .timer {
+            background: var(--secondary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: #d81b60;
+            font-family: monospace;
+        }
+
+        .repeat-note {
+            font-size: 0.95em;
+            color: #d35400;
+            font-weight: 800;
+            background: #fff3e0;
+            padding: 8px 15px;
+            border-radius: 15px;
+            border: 2px dashed #f39c12;
+            margin-bottom: 15px;
             display: none;
         }
 
-        #flashcard-view {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            perspective: 1000px;
-        }
-
+        /* Thẻ từ vựng chính */
         .flashcard {
-            width: 350px;
-            height: 480px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-            cursor: pointer;
-        }
-
-        .flashcard.is-flipped {
-            transform: rotateY(180deg);
-        }
-
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
+            background: #fff;
+            border: 3px solid var(--secondary);
             border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .card-front {
-            background: linear-gradient(to bottom right, #ffffff, var(--pink-light));
-            border: 2px solid var(--pink-dark);
-        }
-
-        .card-back {
-            background: linear-gradient(to bottom right, #ffffff, var(--blue-light));
-            border: 2px solid var(--blue-dark);
-            transform: rotateY(180deg);
-            justify-content: flex-start;
-            overflow-y: auto;
-        }
-
-        .icon-large {
-            font-size: 100px;
             margin-bottom: 20px;
-            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+            position: relative;
         }
 
-        .hanzi-large {
-            font-size: 60px;
-            font-weight: bold;
-            color: #333;
-            letter-spacing: 5px;
+        .hanzi-display {
+            font-size: 4em;
+            color: var(--text-main);
+            font-weight: 800;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            margin: 10px 0;
         }
 
-        .card-back .hanzi-medium {
-            font-size: 40px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .pinyin {
-            font-size: 24px;
-            color: #d87093;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .meaning {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--blue-dark);
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-
-        .info-box {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            width: 100%;
-            text-align: left;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-
-        .info-title {
-            font-weight: bold;
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 5px;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 3px;
-        }
-
-        .audio-btn {
-            margin-top: auto;
-            margin-bottom: 10px;
-            background-color: var(--blue-dark);
-            width: 60px;
-            height: 60px;
+        .audio-icon-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
             border-radius: 50%;
-            display: flex;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1em;
+            font-weight: 800;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            flex-shrink: 0;
+            gap: 5px;
         }
 
-        .audio-btn:hover {
-            background-color: var(--pink-dark);
+        .audio-icon-btn:hover { transform: scale(1.05); background: var(--btn-hover); }
+
+        /* Khu vực hiển thị sau khi giải đáp */
+        .reveal-section {
+            display: none;
+            text-align: left;
+            background: #fffafa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid var(--secondary);
+            margin-bottom: 15px;
+            animation: fadeIn 0.4s ease-out;
         }
 
-        .fc-controls {
-            margin-top: 20px;
-            display: flex;
-            gap: 20px;
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .vocab-info {
+            border-bottom: 2px dashed var(--secondary);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
-        .counter {
-            margin-top: 10px;
-            font-weight: bold;
-            color: #d87093;
+        .example-box {
+            background: #fdf2e9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #ff9a9e;
         }
+
+        .example-hanzi { font-size: 1.6em; font-weight: 800; color: #333; margin-bottom: 8px; line-height: 1.4; }
+        .example-pinyin { font-size: 1.1em; color: #666; margin-bottom: 5px; }
+        .example-meaning { font-size: 1.1em; color: #d81b60; font-weight: 600; }
+
+        .pinyin-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.4em;
+            border: 3px solid var(--secondary);
+            border-radius: 15px;
+            text-align: center;
+            outline: none;
+            background: #fafafa;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        .pinyin-input.correct-input { border-color: #388e3c; background: #e8f5e9; }
+        .pinyin-input.wrong-input { border-color: #d32f2f; background: #ffebee; animation: shake 0.4s; }
+        .pinyin-input.revealed-input { border-color: #e67e22; background: #fff3e0; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        .action-btn {
+            border: none; padding: 15px; border-radius: 30px; font-size: 1.2em; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+        .check-btn { background: var(--primary); color: #fff; }
+        .giveup-btn { background: #e0c3fc; color: #4a4a4a; }
+        .repeat-btn { background: #ffd194; color: #d35400; flex: 1; }
+        .next-btn { background: var(--primary); color: #fff; flex: 1; }
+
+        .diff-display { margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 10px; border: 1px solid #ffb6b9; }
+        .diff-label { font-weight: 800; color: #888; font-size: 0.9em; }
+        .user-val { color: #d32f2f; text-decoration: line-through; margin-right: 10px; }
+        .correct-val { color: #388e3c; font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🎀 Trạm Từ Vựng Phồn Thể 🎀</h1>
-        <div class="controls">
-            <button id="btn-flashcard" class="active-btn" onclick="switchView('flashcard')">Flashcard</button>
-            <button id="btn-mindmap" onclick="switchView('mindmap')">Mindmap</button>
+<div class="quiz-container" id="quiz-box">
+    <div class="header-info">
+        <span id="question-count">Câu: 1/...</span>
+        <span class="timer" id="timer">00:00</span>
+    </div>
+
+    <div class="repeat-note" id="repeat-note">Thẻ sẽ lặp lại: 0</div>
+
+    <div class="flashcard">
+        <div class="hanzi-display" id="card-hanzi">漢字</div>
+        <button class="audio-icon-btn" onclick="playAudio('vocab')">🔊 Nghe từ</button>
+    </div>
+
+    <input type="text" id="pinyin-input" class="pinyin-input" placeholder="Gõ pinyin có dấu (VD: jì huà)..." autocomplete="off">
+    
+    <div class="reveal-section" id="reveal-section">
+        <div id="diff-box" style="display:none;" class="diff-display">
+            <div class="diff-label">ĐỐI CHIẾU LỖI SAI:</div>
+            <div><span class="user-val" id="user-typed"></span> <span class="correct-val" id="correct-pinyin-reveal"></span></div>
         </div>
-    </header>
+        
+        <div class="vocab-info">
+            <div style="font-size: 1.2em;"><strong>Đáp án:</strong> <span id="vocab-pinyin" style="color:#388e3c; font-weight:bold;"></span></div>
+            <div style="font-size: 1.2em;"><strong>Nghĩa:</strong> <span id="vocab-meaning"></span></div>
+        </div>
 
-    <div class="main-container">
-        <div id="mindmap-view"></div>
-
-        <div id="flashcard-view">
-            <div class="flashcard" id="flashcard" onclick="flipCard(event)">
-                <div class="card-face card-front">
-                    <div class="icon-large" id="fc-icon">🍎</div>
-                    <div class="hanzi-large" id="fc-hanzi-front">水果</div>
-                </div>
-                <div class="card-face card-back">
-                    <div class="hanzi-medium" id="fc-hanzi-back">水果</div>
-                    <div class="pinyin" id="fc-pinyin">shuǐ guǒ</div>
-                    <div class="meaning" id="fc-meaning">Trái cây</div>
-                    
-                    <div class="info-box">
-                        <div class="info-title"><i class="fa-solid fa-book-open"></i> Ví dụ</div>
-                        <span id="fc-example">台灣的水果很好吃。(Trái cây Đài Loan rất ngon.)</span>
-                    </div>
-
-                    <div class="info-box">
-                        <div class="info-title"><i class="fa-solid fa-tree"></i> Nguồn gốc / Mẹo nhớ</div>
-                        <span id="fc-etymology">水 (Thủy - nước) + 果 (Quả - trái).</span>
-                    </div>
-
-                    <button class="audio-btn" onclick="playAudio(event)">
-                        <i class="fa-solid fa-volume-high"></i>
-                    </button>
-                </div>
+        <div class="example-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong style="color:#d35400">VÍ DỤ TRONG CÂU:</strong>
+                <button class="audio-icon-btn" style="background:#ff758c" onclick="playAudio('sentence')">🔊 Nghe câu</button>
             </div>
-            
-            <div class="fc-controls">
-                <button onclick="prevCard()"><i class="fa-solid fa-arrow-left"></i> Trước</button>
-                <button onclick="nextCard()">Tiếp <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <div class="counter" id="card-counter">1 / 57</div>
+            <div class="example-hanzi" id="ex-hanzi"></div>
+            <div class="example-pinyin" id="ex-pinyin"></div>
+            <div class="example-meaning" id="ex-meaning"></div>
         </div>
     </div>
 
-    <script>
-        // Toàn bộ 57 từ vựng bạn đã yêu cầu
-        const vocabData = [
-            { id: 1, word: "水果", pinyin: "shuǐ guǒ", meaning: "Trái cây", example: "台灣的水果很甜。", etymology: "水 (Nước) + 果 (Trái cây).", icon: "🍎" },
-            { id: 2, word: "黃色", pinyin: "huáng sè", meaning: "Màu vàng", example: "我喜歡黃色的衣服。", etymology: "黃 (Vàng) + 色 (Màu sắc).", icon: "🟨" },
-            { id: 3, word: "芒果", pinyin: "máng guǒ", meaning: "Xoài", example: "夏天吃芒果冰很好吃。", etymology: "芒 (Cỏ mang) + 果 (Quả).", icon: "🥭" },
-            { id: 4, word: "給", pinyin: "gěi", meaning: "Cho, đưa", example: "請把那本書給我。", etymology: "Bộ Mịch (sợi tơ) kết hợp chữ Hợp (tụ lại).", icon: "🤲" },
-            { id: 5, word: "香甜", pinyin: "xiāng tián", meaning: "Thơm ngọt", example: "這個西瓜很香甜。", etymology: "香 (Thơm) + 甜 (Ngọt).", icon: "🍯" },
-            { id: 6, word: "紅色", pinyin: "hóng sè", meaning: "Màu đỏ", example: "紅色的外套很漂亮。", etymology: "紅 (Đỏ) + 色 (Màu sắc).", icon: "🟥" },
-            { id: 7, word: "西瓜", pinyin: "xī guā", meaning: "Dưa hấu", example: "天氣熱，我們吃西瓜吧。", etymology: "西 (Phía Tây) + 瓜 (Dưa). Dưa đến từ phương Tây.", icon: "🍉" },
-            { id: 8, word: "以前", pinyin: "yǐ qián", meaning: "Trước đây", example: "我以前住在台北。", etymology: "以 (Lấy mốc) + 前 (Phía trước).", icon: "⏳" },
-            { id: 9, word: "機會", pinyin: "jī huì", meaning: "Cơ hội", example: "這是一個好機會。", etymology: "機 (Bộ máy/Thời cơ) + 會 (Gặp gỡ).", icon: "🍀" },
-            { id: 10, word: "吃吃看", pinyin: "chī chī kàn", meaning: "Ăn thử", example: "你吃吃看這個芒果。", etymology: "Lặp từ 吃 (Ăn) + 看 (Xem).", icon: "😋" },
-            { id: 11, word: "拍", pinyin: "pāi", meaning: "Chụp (ảnh), vỗ", example: "幫我拍一張照片好嗎？", etymology: "Bộ Thủ (tay) + chữ Bạch (màu trắng). Dùng tay vỗ.", icon: "📸" },
-            { id: 12, word: "笑", pinyin: "xiào", meaning: "Cười", example: "他笑得很開心。", etymology: "Bộ Trúc ở trên, bộ Yểu ở dưới.", icon: "😄" },
-            { id: 13, word: "開心", pinyin: "kāi xīn", meaning: "Vui vẻ", example: "今天我很開心。", etymology: "開 (Mở) + 心 (Lòng). Mở lòng ra là vui.", icon: "🥰" },
-            { id: 14, word: "穿", pinyin: "chuān", meaning: "Mặc", example: "外面很冷，多穿衣服。", etymology: "Bộ Huyệt (cái hang) + chữ Nha (răng). Đâm xuyên qua (mặc).", icon: "👕" },
-            { id: 15, word: "衣服", pinyin: "yī fú", meaning: "Quần áo", example: "這件衣服很乾淨。", etymology: "衣 (Áo) + 服 (Phục).", icon: "👗" },
-            { id: 16, word: "旅館", pinyin: "lǚ guǎn", meaning: "Khách sạn, nhà nghỉ", example: "這家旅館很便宜。", etymology: "旅 (Du lịch) + 館 (Quán/Nhà).", icon: "🏨" },
-            { id: 17, word: "太太", pinyin: "tài tai", meaning: "Vợ, bà (xưng hô)", example: "林太太，您好！", etymology: "Lặp chữ Thái (Lớn). Gọi người phụ nữ một cách tôn trọng.", icon: "👩" },
-            { id: 18, word: "男", pinyin: "nán", meaning: "Nam (Giới tính)", example: "那個男生很高。", etymology: "Điền (ruộng) + Lực (sức mạnh). Người có sức cày ruộng là nam.", icon: "👨" },
-            { id: 19, word: "矮", pinyin: "ǎi", meaning: "Thấp, lùn", example: "弟弟比我矮。", etymology: "Bộ Thỉ (mũi tên) + chữ Ủy.", icon: "📉" },
-            { id: 20, word: "弟弟", pinyin: "dì di", meaning: "Em trai", example: "我弟弟喜歡打籃球。", etymology: "Tượng hình cột gỗ được buộc dây thừng.", icon: "👦" },
-            { id: 21, word: "乾淨", pinyin: "gān jìng", meaning: "Sạch sẽ", example: "我的房間很乾淨。", etymology: "乾 (Khô ráo) + 淨 (Sạch).", icon: "✨" },
-            { id: 22, word: "窗戶", pinyin: "chuāng hù", meaning: "Cửa sổ", example: "請把窗戶打開。", etymology: "窗 (Cửa sổ) + 戶 (Cửa một cánh).", icon: "🪟" },
-            { id: 23, word: "往", pinyin: "wǎng", meaning: "Hướng về", example: "一直往前走。", etymology: "Bộ Xích (bước đi) + chữ Chủ.", icon: "➡️" },
-            { id: 24, word: "藍色", pinyin: "lán sè", meaning: "Màu xanh dương", example: "天空是藍色的。", etymology: "藍 (Màu xanh/Cây chàm) + 色 (Màu).", icon: "🟦" },
-            { id: 25, word: "因為", pinyin: "yīn wèi", meaning: "Bởi vì", example: "因為下雨，所以我沒去。", etymology: "因 (Nguyên do) + 為 (Vì).", icon: "🤔" },
-            { id: 26, word: "住", pinyin: "zhù", meaning: "Ở, sống", example: "你住在哪裡？", etymology: "Bộ Nhân đứng (người) + chữ Chủ. Nơi người làm chủ.", icon: "🏡" },
-            { id: 27, word: "上個月", pinyin: "shàng ge yuè", meaning: "Tháng trước", example: "我上個月去台南。", etymology: "上 (Trên/Trước) + 個 (lượng từ) + 月 (Tháng).", icon: "📅" },
-            { id: 28, word: "這些", pinyin: "zhè xiē", meaning: "Những cái này", example: "這些水果是誰買的？", etymology: "這 (Này) + 些 (Một vài).", icon: "📦" },
-            { id: 29, word: "租", pinyin: "zū", meaning: "Thuê", example: "我想租一間套房。", etymology: "Bộ Hòa (cây lúa) + chữ Thả.", icon: "🔑" },
-            { id: 30, word: "房東", pinyin: "fáng dōng", meaning: "Chủ nhà", example: "房東住在二樓。", etymology: "房 (Phòng) + 東 (Đông/Chủ nhân).", icon: "🗝️" },
-            { id: 31, word: "客廳", pinyin: "kè tīng", meaning: "Phòng khách", example: "客廳裡有一台電視。", etymology: "客 (Khách) + 廳 (Sảnh).", icon: "🛋️" },
-            { id: 32, word: "廚房", pinyin: "chú fáng", meaning: "Phòng bếp", example: "媽媽在廚房做飯。", etymology: "廚 (Chỗ nấu ăn) + 房 (Phòng).", icon: "🍳" },
-            { id: 33, word: "左邊", pinyin: "zuǒ biān", meaning: "Bên trái", example: "超市在圖書館的左邊。", etymology: "左 (Trái) + 邊 (Bên).", icon: "⬅️" },
-            { id: 34, word: "右邊", pinyin: "yòu biān", meaning: "Bên phải", example: "浴室在客廳的右邊。", etymology: "右 (Phải) + 邊 (Bên).", icon: "➡️" },
-            { id: 35, word: "浴室", pinyin: "yù shì", meaning: "Phòng tắm", example: "這間套房有自己的浴室。", etymology: "浴 (Tắm) + 室 (Phòng).", icon: "🚿" },
-            { id: 36, word: "超市", pinyin: "chāo shì", meaning: "Siêu thị", example: "我去超市買東西。", etymology: "超 (Siêu) + 市 (Thị/Chợ).", icon: "🛒" },
-            { id: 37, word: "走路", pinyin: "zǒu lù", meaning: "Đi bộ", example: "走路去捷運站只要五分鐘。", etymology: "走 (Đi) + 路 (Đường).", icon: "🚶‍♀️" },
-            { id: 38, word: "分鐘", pinyin: "fēn zhōng", meaning: "Phút", example: "請等我十分鐘。", etymology: "分 (Phân) + 鐘 (Chung/Đồng hồ).", icon: "⏱️" },
-            { id: 39, word: "套房", pinyin: "tào fáng", meaning: "Căn hộ khép kín", example: "我在找一間有網路的套房。", etymology: "套 (Vỏ bọc/Bộ) + 房 (Phòng). Phòng có đầy đủ nhà vệ sinh.", icon: "🚪" },
-            { id: 40, word: "再", pinyin: "zài", meaning: "Lại, nữa (hành động lặp lại trong tương lai)", example: "歡迎下次再來。", etymology: "Chữ Nhất và chữ Nhiễm (cấu trúc tượng hình).", icon: "🔄" },
-            { id: 41, word: "電話", pinyin: "diàn huà", meaning: "Điện thoại", example: "這是我的電話號碼。", etymology: "電 (Điện) + 話 (Lời nói).", icon: "📱" },
-            { id: 42, word: "林", pinyin: "Lín", meaning: "Họ Lâm / Rừng", example: "林小姐，你好。", etymology: "Hai chữ Mộc (木) ghép lại thành Rừng.", icon: "🌲" },
-            { id: 43, word: "打電話", pinyin: "dǎ diàn huà", meaning: "Gọi điện thoại", example: "我晚上會給你打電話。", etymology: "打 (Đánh/Thực hiện) + 電話 (Điện thoại).", icon: "📞" },
-            { id: 44, word: "喂", pinyin: "wéi", meaning: "Alo (nghe điện thoại)", example: "喂，請問找哪位？", etymology: "Bộ Khẩu (miệng) + chữ Úy.", icon: "🗣️" },
-            { id: 45, word: "房租", pinyin: "fáng zū", meaning: "Tiền thuê nhà", example: "這個月的房租是多少？", etymology: "房 (Phòng) + 租 (Thuê).", icon: "💰" },
-            { id: 46, word: "已經", pinyin: "yǐ jīng", meaning: "Đã", example: "我已經吃過飯了。", etymology: "已 (Đã xong) + 經 (Trải qua).", icon: "✔️" },
-            { id: 47, word: "習慣", pinyin: "xí guàn", meaning: "Thói quen, quen với", example: "我習慣早起。", etymology: "習 (Học tập/Luyện tập) + 慣 (Quen).", icon: "🧘‍♀️" },
-            { id: 48, word: "問題", pinyin: "wèn tí", meaning: "Vấn đề, câu hỏi", example: "你有什麼問題嗎？", etymology: "問 (Hỏi) + 題 (Chủ đề).", icon: "❓" },
-            { id: 49, word: "熱水器", pinyin: "rè shuǐ qì", meaning: "Bình nóng lạnh", example: "浴室的熱水器壞了。", etymology: "熱 (Nóng) + 水 (Nước) + 器 (Thiết bị).", icon: "♨️" },
-            { id: 50, word: "好像", pinyin: "hǎo xiàng", meaning: "Hình như, có vẻ", example: "好像快要下雨了。", etymology: "好 (Rất) + 像 (Giống).", icon: "💭" },
-            { id: 51, word: "裝", pinyin: "zhuāng", meaning: "Lắp đặt, đóng gói", example: "房東昨天裝了新的冷氣。", etymology: "Bộ Y (áo) ở dưới, chữ Tráng ở trên.", icon: "🔧" },
-            { id: 52, word: "不過", pinyin: "bú guò", meaning: "Nhưng (chuyển ngữ khí nhẹ)", example: "這件衣服很好看，不過有點貴。", etymology: "不 (Không) + 過 (Qua).", icon: "✋" },
-            { id: 53, word: "付", pinyin: "fù", meaning: "Thanh toán", example: "請問要在哪裡付錢？", etymology: "Bộ Nhân đứng + chữ Thốn. Đưa đồ cho người khác.", icon: "💳" },
-            { id: 54, word: "收到", pinyin: "shōu dào", meaning: "Nhận được", example: "我收到你的信了。", etymology: "收 (Thu lấy) + 到 (Đến).", icon: "📥" },
-            { id: 55, word: "不好意思", pinyin: "bù hǎo yì si", meaning: "Ngại quá, xin lỗi", example: "不好意思，讓你久等了。", etymology: "Không có ý tốt (ngại ngùng).", icon: "😳" },
-            { id: 56, word: "沒關係", pinyin: "méi guān xi", meaning: "Không sao đâu", example: "A: 對不起。 B: 沒關係。", etymology: "沒 (Không có) + 關係 (Quan hệ/Ảnh hưởng).", icon: "👌" },
-            { id: 57, word: "有線電視", pinyin: "yǒu xiàn diàn shì", meaning: "Truyền hình cáp", example: "我的套房有有線電視。", etymology: "有線 (Có dây) + 電視 (Tivi).", icon: "📺" }
-        ];
+    <div class="btn-group">
+        <button class="action-btn check-btn" id="check-btn" onclick="handleCheck()">Kiểm tra ✨</button>
+        <button class="action-btn giveup-btn" id="giveup-btn" onclick="handleGiveUp()">Xem đáp án 🏳️</button>
+        <div id="post-group" style="display:none; gap:10px; width:100%;">
+            <button class="action-btn repeat-btn" id="repeat-btn" onclick="addRepeat()">Lặp lại 🔁</button>
+            <button class="action-btn next-btn" onclick="loadNext()">Tiếp theo 🌸</button>
+        </div>
+    </div>
+</div>
 
-        let currentIndex = 0;
+<div class="quiz-container" id="result-box" style="display:none;">
+    <h2>Hoàn Thành! 🏆</h2>
+    <p id="final-time" style="font-size:1.5em; font-weight:800; color:#d81b60;"></p>
+    <button class="action-btn check-btn" style="width:100%" onclick="location.reload()">Luyện tập lại từ đầu</button>
+</div>
 
-        function updateCounter() {
-            document.getElementById('card-counter').textContent = `${currentIndex + 1} / ${vocabData.length}`;
+<script>
+    // Dữ liệu 66 từ vựng chủ đề Công việc, Dự định & Sinh nhật
+    const rawData = [
+        { h: "計畫", p: "jì huà", m: "Kế hoạch", exH: "你畢業以後有什麼計畫？", exP: "nǐ bì yè yǐ hòu yǒu shén me jì huà?", exM: "Bạn có kế hoạch gì sau khi tốt nghiệp?" },
+        { h: "時間", p: "shí jiān", m: "Thời gian", exH: "我現在沒有時間去玩。", exP: "wǒ xiàn zài méi yǒu shí jiān qù wán.", exM: "Bây giờ tôi không có thời gian đi chơi." },
+        { h: "先", p: "xiān", m: "Trước", exH: "你先吃飯吧，我等一下再吃。", exP: "nǐ xiān chī fàn ba, wǒ děng yí xià zài chī.", exM: "Bạn ăn cơm trước đi, tôi đợi lát nữa rồi ăn." },
+        { h: "念", p: "niàn", m: "Học / Đọc", exH: "他打算去台灣念大學。", exP: "tā dǎ suàn qù tái wān niàn dà xué.", exM: "Anh ấy dự định đến Đài Loan học đại học." },
+        { h: "大學", p: "dà xué", m: "Đại học", exH: "這所大學的風景很漂亮。", exP: "zhè suǒ dà xué de fēng jǐng hěn piào liàng.", exM: "Phong cảnh của trường đại học này rất đẹp." },
+        { h: "需要", p: "xū yào", m: "Cần / Nhu cầu", exH: "學中文需要很多時間。", exP: "xué zhōng wén xū yào hěn duō shí jiān.", exM: "Học tiếng Trung cần rất nhiều thời gian." },
+        { h: "獎學金", p: "jiǎng xué jīn", m: "Học bổng", exH: "他的成績很好，所以拿到獎學金。", exP: "tā de chéng jī hěn hǎo, suǒ yǐ ná dào jiǎng xué jīn.", exM: "Thành tích của anh ấy rất tốt, nên đã lấy được học bổng." },
+        { h: "成績", p: "chéng jī", m: "Thành tích / Điểm số", exH: "這次考試你的成績怎麼樣？", exP: "zhè cì kǎo shì nǐ de chéng jī zěn me yàng?", exM: "Điểm số của bạn trong bài thi lần này thế nào?" },
+        { h: "學費", p: "xué fèi", m: "Học phí", exH: "這裡的學費比較貴。", exP: "zhè lǐ de xué fèi bǐ jiào guì.", exM: "Học phí ở đây khá đắt." },
+        { h: "公司", p: "gōng sī", m: "Công ty", exH: "他哥哥在一家大公司上班。", exP: "tā gē ge zài yì jiā dà gōng sī shàng bān.", exM: "Anh trai anh ấy làm việc ở một công ty lớn." },
+        { h: "替", p: "tì", m: "Thay / Cho", exH: "請你替我跟老師說謝謝。", exP: "qǐng nǐ tì wǒ gēn lǎo shī shuō xiè xie.", exM: "Xin bạn hãy thay tôi nói lời cảm ơn với thầy giáo." },
+        { h: "希望", p: "xī wàng", m: "Hy vọng", exH: "我希望明年能去台灣玩。", exP: "wǒ xī wàng míng nián néng qù tái wān wán.", exM: "Tôi hy vọng năm sau có thể đi Đài Loan chơi." },
+        { h: "以後", p: "yǐ hòu", m: "Sau này / Sau khi", exH: "下課以後我們一起去喝茶。", exP: "xià kè yǐ hòu wǒ men yì qǐ qù hē chá.", exM: "Sau khi tan học chúng ta cùng đi uống trà." },
+        { h: "上班", p: "shàng bān", m: "Đi làm", exH: "爸爸每天早上八點去上班。", exP: "bà ba měi tiān zǎo shang bā diǎn qù shàng bān.", exM: "Bố mỗi sáng 8 giờ đi làm." },
+        { h: "念書", p: "niàn shū", m: "Đi học / Đọc sách", exH: "他在圖書館念書。", exP: "tā zài tú shū guǎn niàn shū.", exM: "Anh ấy đang học bài ở thư viện." },
+        { h: "累", p: "lèi", m: "Mệt", exH: "今天工作很多，我覺得很累。", exP: "jīn tiān gōng zuò hěn duō, wǒ jué de hěn lèi.", exM: "Hôm nay công việc rất nhiều, tôi cảm thấy rất mệt." },
+        { h: "語言中心", p: "yǔ yán zhōng xīn", m: "Trung tâm ngôn ngữ", exH: "他在語言中心學中文。", exP: "tā zài yǔ yán zhōng xīn xué zhōng wén.", exM: "Anh ấy học tiếng Trung ở trung tâm ngôn ngữ." },
+        { h: "加油", p: "jiā yóu", m: "Cố lên", exH: "明天的比賽你要加油！", exP: "míng tiān de bǐ sài nǐ yào jiā yóu!", exM: "Trận đấu ngày mai bạn phải cố lên!" },
+        { h: "工作", p: "gōng zuò", m: "Công việc / Làm việc", exH: "找工作很不容易。", exP: "zhǎo gōng zuò hěn bù róng yì.", exM: "Tìm công việc rất không dễ dàng." },
+        { h: "去年", p: "qù nián", m: "Năm ngoái", exH: "我去年在台北念書。", exP: "wǒ qù nián zài tái běi niàn shū.", exM: "Năm ngoái tôi học ở Đài Bắc." },
+        { h: "做", p: "zuò", m: "Làm", exH: "週末你喜歡做什麼？", exP: "zhōu mò nǐ xǐ huan zuò shén me?", exM: "Cuối tuần bạn thích làm gì?" },
+        { h: "生意", p: "shēng yì", m: "Việc kinh doanh", exH: "他爸爸是做生意的。", exP: "tā bà ba shì zuò shēng yì de.", exM: "Bố anh ấy làm kinh doanh." },
+        { h: "這樣", p: "zhè yàng", m: "Như vậy / Thế này", exH: "你這樣做不對。", exP: "nǐ zhè yàng zuò bú duì.", exM: "Bạn làm như vậy là không đúng." },
+        { h: "國家", p: "guó jiā", m: "Quốc gia", exH: "你最喜歡哪個國家？", exP: "nǐ zuì xǐ huan nǎ ge guó jiā?", exM: "Bạn thích quốc gia nào nhất?" },
+        { h: "試", p: "shì", m: "Thử", exH: "這件衣服很好看，你要試試嗎？", exP: "zhè jiàn yī fu hěn hǎo kàn, nǐ yào shì shi ma?", exM: "Bộ quần áo này rất đẹp, bạn muốn thử không?" },
+        { h: "難", p: "nán", m: "Khó", exH: "中文的語法難不難？", exP: "zhōng wén de yǔ fǎ nán bù nán?", exM: "Ngữ pháp tiếng Trung khó không?" },
+        { h: "那麼", p: "nà me", m: "Vậy thì / Như thế", exH: "天氣那麼冷，多穿一點。", exP: "tiān qì nà me lěng, duō chuān yì diǎn.", exM: "Thời tiết lạnh như thế, mặc nhiều một chút." },
+        { h: "再", p: "zài", m: "Lại / Nữa", exH: "等我吃完飯再去買東西。", exP: "děng wǒ chī wán fàn zài qù mǎi dōng xi.", exM: "Đợi tôi ăn xong rồi hẵng đi mua đồ." },
+        { h: "試試看", p: "shì shi kàn", m: "Thử xem", exH: "這個蛋糕很好吃，你試試看！", exP: "zhè ge dàn gāo hěn hǎo chī, nǐ shì shi kàn!", exM: "Cái bánh kem này rất ngon, bạn ăn thử xem!" },
+        { h: "生日", p: "shēng rì", m: "Sinh nhật", exH: "祝你生日快樂！", exP: "zhù nǐ shēng rì kuài lè!", exM: "Chúc bạn sinh nhật vui vẻ!" },
+        { h: "快樂", p: "kuài lè", m: "Vui vẻ", exH: "週末快樂！", exP: "zhōu mò kuài lè!", exM: "Cuối tuần vui vẻ!" },
+        { h: "回來", p: "huí lái", m: "Về / Trở về", exH: "哥哥剛從美國回來。", exP: "gē ge gāng cóng měi guó huí lái.", exM: "Anh trai vừa từ Mỹ trở về." },
+        { h: "啊", p: "a", m: "A / Á (thán từ)", exH: "天氣真好啊！", exP: "tiān qì zhēn hǎo a!", exM: "Thời tiết thật đẹp a!" },
+        { h: "怎麼", p: "zěn me", m: "Sao / Thế nào", exH: "你怎麼還沒去上班？", exP: "nǐ zěn me hái méi qù shàng bān?", exM: "Sao bạn vẫn chưa đi làm?" },
+        { h: "忘了", p: "wàng le", m: "Quên rồi", exH: "對不起，我忘了帶書。", exP: "duì bù qǐ, wǒ wàng le dài shū.", exM: "Xin lỗi, tôi quên mang sách rồi." },
+        { h: "記得", p: "jì de", m: "Nhớ", exH: "你還記得我嗎？", exP: "nǐ hái jì de wǒ ma?", exM: "Bạn còn nhớ tôi không?" },
+        { h: "當然", p: "dāng rán", m: "Đương nhiên", exH: "我當然記得你的名字。", exP: "wǒ dāng rán jì de nǐ de míng zi.", exM: "Tôi đương nhiên nhớ tên của bạn." },
+        { h: "語言", p: "yǔ yán", m: "Ngôn ngữ", exH: "他會說三種語言。", exP: "tā huì shuō sān zhǒng yǔ yán.", exM: "Anh ấy biết nói 3 loại ngôn ngữ." },
+        { h: "交換", p: "jiāo huàn", m: "Trao đổi", exH: "我們常常交換禮物。", exP: "wǒ men cháng cháng jiāo huàn lǐ wù.", exM: "Chúng tôi thường xuyên trao đổi quà." },
+        { h: "熱心", p: "rè xīn", m: "Nhiệt tình", exH: "台灣人非常熱心。", exP: "tái wān rén fēi cháng rè xīn.", exM: "Người Đài Loan vô cùng nhiệt tình." },
+        { h: "西班牙文", p: "xī bān yá wén", m: "Tiếng Tây Ban Nha", exH: "我在大學學西班牙文。", exP: "wǒ zài dà xué xué xī bān yá wén.", exM: "Tôi học tiếng Tây Ban Nha ở trường đại học." },
+        { h: "一樣", p: "yí yàng", m: "Giống nhau", exH: "這兩件衣服一樣貴。", exP: "zhè liǎng jiàn yī fu yí yàng guì.", exM: "Hai bộ quần áo này đắt như nhau." },
+        { h: "過", p: "guò", m: "Đón (lễ) / Đã từng", exH: "昨天我們一起過生日。", exP: "zuó tiān wǒ men yì qǐ guò shēng rì.", exM: "Hôm qua chúng tôi cùng nhau đón sinh nhật." },
+        { h: "左右", p: "zuǒ yòu", m: "Khoảng chừng", exH: "從這裡到車站要十分鐘左右。", exP: "cóng zhè lǐ dào chē zhàn yào shí fēn zhōng zuǒ yòu.", exM: "Từ đây đến bến xe mất khoảng chừng mười phút." },
+        { h: "門口", p: "mén kǒu", m: "Cổng / Cửa", exH: "我在學校門口等你。", exP: "wǒ zài xué xiào mén kǒu děng nǐ.", exM: "Tôi đợi bạn ở cổng trường." },
+        { h: "西班牙", p: "xī bān yá", m: "Tây Ban Nha", exH: "我打算明年去西班牙玩。", exP: "wǒ dǎ suàn míng nián qù xī bān yá wán.", exM: "Tôi dự định sang năm đi Tây Ban Nha chơi." },
+        { h: "生日快樂", p: "shēng rì kuài lè", m: "Sinh nhật vui vẻ", exH: "祝你生日快樂，心想事成！", exP: "zhù nǐ shēng rì kuài lè, xīn xiǎng shì chéng!", exM: "Chúc bạn sinh nhật vui vẻ, cầu được ước thấy!" },
+        { h: "我就是", p: "wǒ jiù shì", m: "Tôi chính là...", exH: "請問你是王先生嗎？我就是。", exP: "qǐng wèn nǐ shì wáng xiān shēng ma? wǒ jiù shì.", exM: "Xin hỏi ngài là ông Vương phải không? Tôi chính là đây." },
+        { h: "好久不見", p: "hǎo jiǔ bú jiàn", m: "Lâu rồi không gặp", exH: "老朋友，好久不見！", exP: "lǎo péng you, hǎo jiǔ bú jiàn!", exM: "Bạn cũ, lâu rồi không gặp!" },
+        { h: "不必客氣", p: "bú bì kè qì", m: "Không cần khách sáo", exH: "謝謝你的幫忙。不必客氣！", exP: "xiè xie nǐ de bāng máng. bú bì kè qì!", exM: "Cảm ơn sự giúp đỡ của bạn. Không cần khách sáo!" },
+        { h: "禮物", p: "lǐ wù", m: "Quà tặng", exH: "這是我送給你的生日禮物。", exP: "zhè shì wǒ sòng gěi nǐ de shēng rì lǐ wù.", exM: "Đây là quà sinh nhật tôi tặng cho bạn." },
+        { h: "今年", p: "jīn nián", m: "Năm nay", exH: "我今年二十歲。", exP: "wǒ jīn nián èr shí suì.", exM: "Năm nay tôi hai mươi tuổi." },
+        { h: "訂", p: "dìng", m: "Đặt (trước)", exH: "我已經訂好餐廳了。", exP: "wǒ yǐ jīng dìng hǎo cān tīng le.", exM: "Tôi đã đặt xong nhà hàng rồi." },
+        { h: "豬腳", p: "zhū jiǎo", m: "Chân giò lợn", exH: "台灣人過生日常吃豬腳麵線。", exP: "tái wān rén guò shēng rì cháng chī zhū jiǎo miàn xiàn.", exM: "Người Đài Loan đón sinh nhật thường ăn mì chân giò lợn." },
+        { h: "麵線", p: "miàn xiàn", m: "Mì sợi nhỏ", exH: "這碗豬腳麵線很好吃。", exP: "zhè wǎn zhū jiǎo miàn xiàn hěn hǎo chī.", exM: "Bát mì chân giò lợn này rất ngon." },
+        { h: "蛋", p: "dàn", m: "Trứng", exH: "早上我吃了一個蛋。", exP: "zǎo shang wǒ chī le yí ge dàn.", exM: "Buổi sáng tôi đã ăn một quả trứng." },
+        { h: "一點", p: "yì diǎn", m: "Một chút", exH: "我會說一點中文。", exP: "wǒ huì shuō yì diǎn zhōng wén.", exM: "Tôi biết nói một chút tiếng Trung." },
+        { h: "傳統", p: "chuán tǒng", m: "Truyền thống", exH: "這是我們國家的傳統。", exP: "zhè shì wǒ men guó jiā de chuán tǒng.", exM: "Đây là truyền thống của quốc gia chúng tôi." },
+        { h: "年輕", p: "nián qīng", m: "Trẻ tuổi", exH: "這裡的老師都很年輕。", exP: "zhè lǐ de lǎo shī dōu hěn nián qīng.", exM: "Giáo viên ở đây đều rất trẻ." },
+        { h: "蛋糕", p: "dàn gāo", m: "Bánh kem", exH: "媽媽給我買了一個大蛋糕。", exP: "mā ma gěi wǒ mǎi le yí ge dà dàn gāo.", exM: "Mẹ mua cho tôi một cái bánh kem lớn." },
+        { h: "對", p: "duì", m: "Đúng / Đối với", exH: "吃水果對身體很好。", exP: "chī shuǐ guǒ duì shēn tǐ hěn hǎo.", exM: "Ăn hoa quả rất tốt cho cơ thể." },
+        { h: "祝", p: "zhù", m: "Chúc", exH: "祝你萬事如意。", exP: "zhù nǐ wàn shì rú yì.", exM: "Chúc bạn vạn sự như ý." },
+        { h: "哪裡", p: "nǎ lǐ", m: "Đâu có / Ở đâu", exH: "你的中文真好！哪裡，哪裡。", exP: "nǐ de zhōng wén zhēn hǎo! nǎ lǐ, nǎ lǐ.", exM: "Tiếng Trung của bạn thật tốt! Đâu có, đâu có (Dùng để khiêm tốn)." },
+        { h: "大部分", p: "dà bù fèn", m: "Đại bộ phận / Phần lớn", exH: "大部分的學生都喜歡上網。", exP: "dà bù fèn de xué shēng dōu xǐ huan shàng wǎng.", exM: "Phần lớn học sinh đều thích lên mạng." },
+        { h: "萬事如意", p: "wàn shì rú yì", m: "Vạn sự như ý", exH: "新年快樂，萬事如意！", exP: "xīn nián kuài lè, wàn shì rú yì!", exM: "Năm mới vui vẻ, vạn sự như ý!" },
+        { h: "心想事成", p: "xīn xiǎng shì chéng", m: "Cầu được ước thấy", exH: "祝你生日快樂，心想事成！", exP: "zhù nǐ shēng rì kuài lè, xīn xiǎng shì chéng!", exM: "Chúc bạn sinh nhật vui vẻ, cầu được ước thấy!" }
+    ];
+
+    let questions = [];
+    let currentIdx = 0;
+    let repeatCount = 0;
+    let timerInterval, seconds = 0;
+
+    function clean(str) { return str.toLowerCase().replace(/[\s,\.\?!\uff0c\u3002\uff1f\uff01]/g, ''); }
+
+    function init() {
+        questions = [...rawData].sort(() => Math.random() - 0.5);
+        document.getElementById('question-count').innerText = `Câu: 1/${questions.length}`;
+        startTimer();
+        render();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            seconds++;
+            let m = Math.floor(seconds / 60);
+            let s = seconds % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }, 1000);
+    }
+
+    function render() {
+        const item = questions[currentIdx];
+        document.getElementById('question-count').innerText = `Câu: ${currentIdx + 1}/${questions.length}`;
+        document.getElementById('card-hanzi').innerText = item.h;
+        document.getElementById('pinyin-input').value = "";
+        document.getElementById('pinyin-input').disabled = false;
+        document.getElementById('pinyin-input').className = "pinyin-input";
+        document.getElementById('reveal-section').style.display = "none";
+        document.getElementById('check-btn').style.display = "block";
+        document.getElementById('giveup-btn').style.display = "block";
+        document.getElementById('post-group').style.display = "none";
+        document.getElementById('repeat-btn').disabled = false;
+        document.getElementById('repeat-btn').innerText = "Lặp lại 🔁";
+        document.getElementById('pinyin-input').focus();
+    }
+
+    // Phát âm
+    function playAudio(type) {
+        const item = questions[currentIdx];
+        const textToRead = (type === 'vocab') ? item.h : item.exH;
+        let msg = new SpeechSynthesisUtterance(textToRead);
+        msg.lang = 'zh-TW'; 
+        msg.rate = 0.8; // Đọc chậm một chút
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(msg);
+    }
+
+    function handleCheck() {
+        const input = document.getElementById('pinyin-input');
+        const item = questions[currentIdx];
+        if (clean(input.value) === clean(item.p)) {
+            input.className = "pinyin-input correct-input";
+            showResult(false);
+        } else {
+            input.className = "pinyin-input wrong-input";
+            setTimeout(() => { if(!input.disabled) input.className = "pinyin-input"; }, 500);
+        }
+    }
+
+    function handleGiveUp() {
+        showResult(true);
+    }
+
+    function showResult(isGiveUp) {
+        const item = questions[currentIdx];
+        const input = document.getElementById('pinyin-input');
+        input.disabled = true;
+        
+        document.getElementById('reveal-section').style.display = "block";
+        document.getElementById('vocab-pinyin').innerText = item.p;
+        document.getElementById('vocab-meaning').innerText = item.m;
+        
+        document.getElementById('ex-hanzi').innerText = item.exH;
+        document.getElementById('ex-pinyin').innerText = item.exP;
+        document.getElementById('ex-meaning').innerText = item.exM;
+
+        if(isGiveUp) {
+            document.getElementById('diff-box').style.display = "block";
+            document.getElementById('user-typed').innerText = input.value || "(Trống)";
+            document.getElementById('correct-pinyin-reveal').innerText = item.p;
+            input.value = item.p;
+            input.classList.add('revealed-input');
+        } else {
+            document.getElementById('diff-box').style.display = "none";
         }
 
-        function loadCard(index) {
-            const card = vocabData[index];
-            document.getElementById('fc-icon').textContent = card.icon;
-            document.getElementById('fc-hanzi-front').textContent = card.word;
-            document.getElementById('fc-hanzi-back').textContent = card.word;
-            document.getElementById('fc-pinyin').textContent = card.pinyin;
-            document.getElementById('fc-meaning').textContent = card.meaning;
-            document.getElementById('fc-example').textContent = card.example;
-            document.getElementById('fc-etymology').textContent = card.etymology;
-            
-            document.getElementById('flashcard').classList.remove('is-flipped');
-            updateCounter();
+        document.getElementById('check-btn').style.display = "none";
+        document.getElementById('giveup-btn').style.display = "none";
+        document.getElementById('post-group').style.display = "flex";
+    }
+
+    function addRepeat() {
+        questions.push(questions[currentIdx]);
+        repeatCount++;
+        const note = document.getElementById('repeat-note');
+        note.style.display = "block";
+        note.innerText = `Thẻ sẽ lặp lại ở cuối bài: ${repeatCount}`;
+        document.getElementById('repeat-btn').disabled = true;
+        document.getElementById('repeat-btn').innerText = "Đã thêm ✅";
+        document.getElementById('question-count').innerText = `Câu: ${currentIdx + 1}/${questions.length}`;
+    }
+
+    function loadNext() {
+        currentIdx++;
+        if (currentIdx < questions.length) render();
+        else {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-box').style.display = "none";
+            document.getElementById('result-box').style.display = "block";
+            document.getElementById('final-time').innerText = `Thời gian hoàn thành: ${document.getElementById('timer').innerText}`;
         }
+    }
 
-        function flipCard(event) {
-            document.getElementById('flashcard').classList.toggle('is-flipped');
+    document.getElementById('pinyin-input').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') {
+            if(!document.getElementById('pinyin-input').disabled) handleCheck();
+            else loadNext();
         }
+    });
 
-        function nextCard() {
-            currentIndex = (currentIndex + 1) % vocabData.length;
-            loadCard(currentIndex);
-        }
-
-        function prevCard() {
-            currentIndex = (currentIndex - 1 + vocabData.length) % vocabData.length;
-            loadCard(currentIndex);
-        }
-
-        function playAudio(event) {
-            event.stopPropagation(); 
-            const textToSpeak = vocabData[currentIndex].word;
-            
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = 'zh-TW'; 
-                utterance.rate = 0.85; 
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert("Trình duyệt của bạn không hỗ trợ phát âm.");
-            }
-        }
-
-        let network = null;
-        function initMindmap() {
-            const container = document.getElementById('mindmap-view');
-            
-            let nodesArray = [{ id: 0, label: "🌟\nTỪ VỰNG", shape: 'circle', color: '#FFB6C1', font: {size: 20, bold: true} }];
-            let edgesArray = [];
-
-            vocabData.forEach((item) => {
-                nodesArray.push({
-                    id: item.id,
-                    label: item.icon + "\n" + item.word,
-                    shape: 'box',
-                    color: '#E0F7FA',
-                    font: { size: 16, face: 'Segoe UI' },
-                    borderWidth: 2,
-                    color: { border: '#81D4FA', background: '#FFFFFF' }
-                });
-                
-                edgesArray.push({
-                    from: 0,
-                    to: item.id,
-                    color: { color: '#FFB6C1' },
-                    width: 1
-                });
-            });
-
-            const data = { nodes: new vis.DataSet(nodesArray), edges: new vis.DataSet(edgesArray) };
-            const options = {
-                physics: { 
-                    stabilization: false, 
-                    barnesHut: { 
-                        gravitationalConstant: -2000,
-                        springLength: 150 
-                    } 
-                },
-                interaction: { hover: true }
-            };
-
-            network = new vis.Network(container, data, options);
-            
-            network.on("click", function (params) {
-                if (params.nodes.length > 0) {
-                    const nodeId = params.nodes[0];
-                    if (nodeId !== 0) {
-                        const index = vocabData.findIndex(v => v.id === nodeId);
-                        if (index !== -1) {
-                            currentIndex = index;
-                            loadCard(currentIndex);
-                            switchView('flashcard');
-                        }
-                    }
-                }
-            });
-        }
-
-        function switchView(viewName) {
-            document.getElementById('flashcard-view').style.display = viewName === 'flashcard' ? 'flex' : 'none';
-            document.getElementById('mindmap-view').style.display = viewName === 'mindmap' ? 'block' : 'none';
-            
-            document.getElementById('btn-flashcard').classList.toggle('active-btn', viewName === 'flashcard');
-            document.getElementById('btn-mindmap').classList.toggle('active-btn', viewName === 'mindmap');
-
-            if (viewName === 'mindmap' && !network) {
-                initMindmap();
-            }
-        }
-
-        // Bắt sự kiện phím mũi tên để lật card nhanh
-        document.addEventListener('keydown', function(event) {
-            if (document.getElementById('flashcard-view').style.display !== 'none') {
-                if (event.key === 'ArrowRight') {
-                    nextCard();
-                } else if (event.key === 'ArrowLeft') {
-                    prevCard();
-                } else if (event.key === ' ' || event.key === 'Enter') {
-                    event.preventDefault();
-                    flipCard();
-                }
-            }
-        });
-
-        loadCard(currentIndex);
-    </script>
+    init();
+</script>
 </body>
 </html>
